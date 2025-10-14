@@ -2,6 +2,9 @@
 #include "player.h"
 #include <vector>
 
+void updateCameraCenterInsideMap(Camera2D &camera, Player &player,
+                                 std::vector<EnvItem> &envItems, float delta);
+
 int main(void) {
   const int screenWidth = 800;
   const int screenHeight = 450;
@@ -24,10 +27,13 @@ int main(void) {
     float deltaTime = GetFrameTime();
 
     player.updatePlayer(deltaTime, envItems);
+    updateCameraCenterInsideMap(camera, player, envItems, deltaTime);
 
     BeginDrawing();
 
     ClearBackground(LIGHTGRAY);
+
+    BeginMode2D(camera);
 
     for (auto &envItem : envItems)
       DrawRectangleRec(envItem.rect, envItem.color);
@@ -35,6 +41,9 @@ int main(void) {
     Rectangle playerRect = {player.position.x - 20, player.position.y - 40,
                             40.0f, 40.0f};
     DrawRectangleRec(playerRect, BLUE);
+
+    EndMode2D();
+
     EndDrawing();
   }
 
@@ -43,7 +52,7 @@ int main(void) {
   return 0;
 }
 
-void UpdateCameraCenterInsideMap(Camera2D &camera, Player &player,
+void updateCameraCenterInsideMap(Camera2D &camera, Player &player,
                                  std::vector<EnvItem> &envItems, float delta) {
   float width = GetScreenWidth();
   float height = GetScreenHeight();
