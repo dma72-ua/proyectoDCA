@@ -1,3 +1,7 @@
+#pragma once
+#include "envItem.h"
+#include <vector>
+
 extern "C" {
 #include "../vendor/include/raylib.h"
 }
@@ -5,7 +9,7 @@ extern "C" {
 class Player {
 public:
   Player(Vector2, float, bool);
-  void updatePlayer(float);
+  void updatePlayer(float, std::vector<EnvItem> &);
   Vector2 position;
 
 private:

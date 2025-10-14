@@ -1,6 +1,5 @@
 #include "envItem.h"
 #include "player.h"
-#include <iterator>
 #include <vector>
 
 int main(void) {
@@ -22,7 +21,7 @@ int main(void) {
 
     float deltaTime = GetFrameTime();
 
-    player.updatePlayer(deltaTime);
+    player.updatePlayer(deltaTime, envItems);
 
     BeginDrawing();
 

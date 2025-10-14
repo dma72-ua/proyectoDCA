@@ -1,3 +1,5 @@
+#pragma once
+
 extern "C" {
 #include "../vendor/include/raylib.h"
 }
@@ -9,9 +11,9 @@ public:
     this->blocking = blocking;
     this->color = color;
   }
-
-private:
   Rectangle rect;
   int blocking;
+
+private:
   Color color;
 };
