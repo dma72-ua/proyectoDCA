@@ -13,7 +13,7 @@ public:
   }
   Rectangle rect;
   int blocking;
+  Color color;
 
 private:
-  Color color;
 };

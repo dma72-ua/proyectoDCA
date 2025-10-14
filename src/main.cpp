@@ -27,6 +27,9 @@ int main(void) {
 
     ClearBackground(LIGHTGRAY);
 
+    for (auto &envItem : envItems)
+      DrawRectangleRec(envItem.rect, envItem.color);
+
     Rectangle playerRect = {player.position.x - 20, player.position.y - 40,
                             40.0f, 40.0f};
     DrawRectangleRec(playerRect, BLUE);
