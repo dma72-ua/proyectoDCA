@@ -15,8 +15,7 @@ int main(void) {
                                    {{250, 300, 100, 10}, 1, GRAY},
                                    {{650, 300, 100, 10}, 1, GRAY}};
 
-  int envItemsLength = sizeof(envItems) / sizeof(envItems[0]);
-
+  SetTargetFPS(60);
   while (!WindowShouldClose()) {
 
     float deltaTime = GetFrameTime();
