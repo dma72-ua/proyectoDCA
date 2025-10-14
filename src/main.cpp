@@ -1,4 +1,7 @@
+#include "envItem.h"
 #include "player.h"
+#include <iterator>
+#include <vector>
 
 int main(void) {
   const int screenWidth = 800;
@@ -7,6 +10,13 @@ int main(void) {
   InitWindow(screenWidth, screenHeight, "Proyecto DCA");
 
   Player player = {{400, 280}, 0, false};
+  std::vector<EnvItem> envItems = {{{0, 0, 1000, 400}, 0, LIGHTGRAY},
+                                   {{0, 400, 1000, 200}, 1, GRAY},
+                                   {{300, 200, 400, 10}, 1, GRAY},
+                                   {{250, 300, 100, 10}, 1, GRAY},
+                                   {{650, 300, 100, 10}, 1, GRAY}};
+
+  int envItemsLength = sizeof(envItems) / sizeof(envItems[0]);
 
   while (!WindowShouldClose()) {
 
