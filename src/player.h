@@ -16,6 +16,6 @@ private:
   float speed;
   bool canJump;
 
-  float PLAYER_MOVE_SPEED = 200.0f;
-  float PLAYER_JUMP_SPEED = 350.0f;
+  float PLAYER_MOVE_SPEED = 180.0f;
+  float PLAYER_JUMP_SPEED = 250.0f;
 };
