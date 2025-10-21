@@ -10,11 +10,12 @@ Player::Player(Vector2 position, float speed, bool canJump) {
 }
 
 void Player::updatePlayer(float delta, std::vector<EnvItem> &envItems) {
-  if (IsKeyDown(KEY_LEFT))
+  if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
     position.x -= PLAYER_MOVE_SPEED * delta;
-  if (IsKeyDown(KEY_RIGHT))
+  if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
     position.x += PLAYER_MOVE_SPEED * delta;
-  if (IsKeyDown(KEY_SPACE) && canJump) {
+  if ((IsKeyDown(KEY_SPACE) || IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) &&
+      canJump) {
     speed = -PLAYER_JUMP_SPEED;
     canJump = false;
   }
