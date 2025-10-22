@@ -1,5 +1,7 @@
 #pragma once
-#include "raylib.h"
+extern "C" {
+#include "../vendor/include/raylib.h"
+}
 #include <vector>
 #include "envItem.h"
 

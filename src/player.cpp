@@ -1,7 +1,5 @@
 #include "player.h"
 #include <vector>
-#include "player.h"
-#include "raylib.h"
 #define GRAVITY 400
 
 Player::Player(Vector2 position, float speed, bool canJump) {
