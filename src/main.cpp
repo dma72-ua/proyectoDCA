@@ -1,155 +1,129 @@
+#include <vector>
 #include "envItem.h"
 #include "player.h"
-#include <vector>
+#include "enemy.h"
 
-void updateCameraCenterInsideMap(Camera2D &camera, Player &player,
-                                 std::vector<EnvItem> &envItems, float delta);
+static constexpr float STOMP_TOLERANCE = 10.0f;
+static constexpr float FALLING_VY_MIN  = 120.0f;
 
-int main(void) {
-  const int screenWidth = 800;
-  const int screenHeight = 450;
-  bool victory = false;
-
-  InitWindow(screenWidth, screenHeight, "Proyecto DCA");
-
-  Player player = {{200, 280}, 0, false};
-
-  std::vector<EnvItem> envItems = {
-      {{0, -200, 3500, 700}, 0, SKYBLUE},
-      {{0, 400, 3500, 100}, 1, DARKGREEN},
-
-      {{300, 340, 100, 20}, 1, DARKBROWN},
-      {{450, 280, 120, 20}, 1, DARKBROWN},
-      {{620, 220, 100, 20}, 1, DARKBROWN},
-      {{750, 280, 80, 20}, 1, DARKBROWN},
-      {{870, 340, 100, 20}, 1, DARKBROWN},
-
-      {{1000, 340, 90, 20}, 1, DARKBROWN},
-      {{1120, 290, 90, 20}, 1, DARKBROWN},
-      {{1240, 240, 90, 20}, 1, DARKBROWN},
-      {{1360, 190, 90, 20}, 1, DARKBROWN},
-      {{1480, 140, 90, 20}, 1, DARKBROWN},
-
-      {{1600, 200, 70, 15}, 1, GRAY},
-      {{1720, 200, 70, 15}, 1, GRAY},
-      {{1840, 200, 70, 15}, 1, GRAY},
-      {{1960, 150, 70, 15}, 1, GRAY},
-      {{2080, 100, 70, 15}, 1, GRAY},
-
-      {{2180, 150, 80, 15}, 1, GRAY},
-      {{2290, 200, 80, 15}, 1, GRAY},
-      {{2400, 250, 80, 15}, 1, GRAY},
-      {{2510, 300, 80, 15}, 1, GRAY},
-
-      {{2630, 220, 70, 15}, 1, BROWN},
-
-      {{2730, 200, 80, 20}, 1, BROWN},
-      {{2900, 200, 80, 20}, 1, BROWN}, // Gap de 90 unidades
-
-      {{3020, 160, 70, 15}, 1, ORANGE},
-      {{3020, 110, 70, 15}, 1, ORANGE},
-
-      {{3120, 60, 200, 20}, 1, GOLD}};
-
-  Camera2D camera = {
-      {screenWidth / 2.0f, screenHeight / 2.0f}, player.position, 0.0f, 1.0f};
-
-  SetTargetFPS(60);
-  while (!WindowShouldClose()) {
-
-    float deltaTime = GetFrameTime();
-    Rectangle playerRect = {player.position.x - 20, player.position.y - 40,
-                            40.0f, 40.0f};
-
-    if (!victory) {
-      player.updatePlayer(deltaTime, envItems);
-      updateCameraCenterInsideMap(camera, player, envItems, deltaTime);
-
-      Rectangle victoryPlatform = envItems.back().rect;
-      bool isAbovePlatform =
-          playerRect.y + playerRect.height >= victoryPlatform.y &&
-          playerRect.y + playerRect.height <= victoryPlatform.y + 20;
-      bool isWithinXBounds =
-          playerRect.x + playerRect.width > victoryPlatform.x &&
-          playerRect.x < victoryPlatform.x + victoryPlatform.width;
-
-      if (isAbovePlatform && isWithinXBounds)
-        victory = true;
-
-    } else {
-      if (IsKeyPressed(KEY_SPACE)) {
-        player.position = {200, 280};
-        victory = false;
-      }
-    }
-
-    BeginDrawing();
-
-    ClearBackground(LIGHTGRAY);
-
-    BeginMode2D(camera);
-
-    for (auto &envItem : envItems)
-      DrawRectangleRec(envItem.rect, envItem.color);
-
-    DrawRectangleRec(playerRect, BLUE);
-
-    EndMode2D();
-
-    if (victory) {
-      DrawRectangle(0, 0, screenWidth, screenHeight, Fade(BLACK, 0.7f));
-
-      const char *victoryText = "¡VICTORIA!";
-      int textWidth = MeasureText(victoryText, 60);
-      DrawText(victoryText, screenWidth / 2 - textWidth / 2,
-               screenHeight / 2 - 60, 60, GOLD);
-
-      const char *restartText = "Presiona ESPACIO para jugar de nuevo";
-      int restartWidth = MeasureText(restartText, 20);
-      DrawText(restartText, screenWidth / 2 - restartWidth / 2,
-               screenHeight / 2 + 20, 20, WHITE);
-    }
-
-    EndDrawing();
-  }
-
-  CloseWindow();
-
-  return 0;
+static void DrawRetroBackgroundScreen() {
+    auto cloud = [](int x, int y, int w){
+        DrawRectangle(x, y, w, w/2, RAYWHITE);
+        DrawCircle(x + w*0.2f, y + w*0.5f, w*0.25f, RAYWHITE);
+        DrawCircle(x + w*0.5f, y + w*0.5f, w*0.35f, RAYWHITE);
+        DrawCircle(x + w*0.8f, y + w*0.5f, w*0.25f, RAYWHITE);
+    };
+    cloud(120, 60, 120); cloud(420, 90, 100); cloud(780, 50, 130);
+    DrawCircle(220, 360, 100, (Color){124,197,118,255});
+    DrawCircle(300, 380,  60, (Color){124,197,118,255});
 }
 
-void updateCameraCenterInsideMap(Camera2D &camera, Player &player,
-                                 std::vector<EnvItem> &envItems, float delta) {
-  float width = GetScreenWidth();
-  float height = GetScreenHeight();
+static void DrawBricksFloor(const Rectangle& area) {
+    const int tile = 16;
+    for (int y = (int)area.y; y < (int)(area.y + area.height); y += tile)
+        for (int x = (int)area.x; x < (int)(area.x + area.width); x += tile) {
+            Color c = (((x/tile)+(y/tile)) % 2 == 0)
+                    ? (Color){191,111,60,255} : (Color){173,99,52,255};
+            DrawRectangle(x, y, tile, tile, c);
+            DrawRectangleLines(x, y, tile, tile, (Color){110,58,28,255});
+        }
+}
 
-  float minX = 1000, minY = 1000, maxX = -1000, maxY = -1000;
-  for (auto &envItem : envItems) {
-    minX = std::min(envItem.rect.x, minX);
-    maxX = std::max(envItem.rect.x + envItem.rect.width, maxX);
-    minY = std::min(envItem.rect.y, minY);
-    maxY = std::max(envItem.rect.y + envItem.rect.height, maxY);
-  }
+int main() {
+    InitWindow(960, 540, "proyectoDCA – mapa retro y enemigos");
+    SetTargetFPS(60);
 
-  camera.target = player.position;
-  camera.offset = (Vector2){width / 2.0f, height / 2.0f};
+    Camera2D camera = {0};
+    camera.offset = {480,270};
+    camera.zoom   = 1.0f;
 
-  float camMinX = camera.target.x - camera.offset.x / camera.zoom;
-  float camMaxX = camera.target.x + camera.offset.x / camera.zoom;
-  float camMinY = camera.target.y - camera.offset.y / camera.zoom;
-  float camMaxY = camera.target.y + camera.offset.y / camera.zoom;
+    std::vector<EnvItem> envItems = {
+        {{-4000, 400, 8000, 200}, 1, (Color){191,111,60,255}},
+        {{  200, 340,  160,  20}, 1, (Color){191,111,60,255}},
+        {{  500, 300,  160,  20}, 1, (Color){191,111,60,255}},
+        {{  820, 260,  120,  20}, 1, (Color){191,111,60,255}},
+        {{ 1100, 360,   48,  40}, 1, (Color){ 53,148, 61,255}}, // tubería
+    };
 
-  if (camMinX < minX) {
-    camera.target.x = minX + camera.offset.x / camera.zoom;
-  }
-  if (camMaxX > maxX) {
-    camera.target.x = maxX - camera.offset.x / camera.zoom;
-  }
+    Player player{};
+    Vector2 startPos = {60, 400};
+    player.reset(startPos);
 
-  if (camMinY < minY) {
-    camera.target.y = minY + camera.offset.y / camera.zoom;
-  }
-  if (camMaxY > maxY) {
-    camera.target.y = maxY - camera.offset.y / camera.zoom;
-  }
+    std::vector<Enemy> enemies = {
+        Enemy({ 420, 0 }, 32, 32, -1),
+        Enemy({ 860, 0 }, 32, 32, +1),
+        Enemy({1300, 0 }, 32, 32, -1),
+    };
+
+    auto resetLevel = [&](){
+        player.reset(startPos);
+        enemies[0].reset({ 420,0}, -1);
+        enemies[1].reset({ 860,0}, +1);
+        enemies[2].reset({1300,0}, -1);
+    };
+
+    while (!WindowShouldClose()) {
+        float dt = GetFrameTime();
+
+        player.UpdatePlayer(envItems, dt);
+        for (auto& e : enemies) e.update(dt, envItems);
+
+        Rectangle pb = player.bounds();
+        bool diedThisFrame = false;
+
+        for (auto& e : enemies) {
+            if (!e.alive) continue;
+            Rectangle eb = e.bounds();
+
+            if (CheckCollisionRecs(pb, eb)) {
+                float pbBottom = pb.y + pb.height;
+                float enemyTop = eb.y;
+                bool  falling  = (player.vy() > FALLING_VY_MIN);
+
+                bool stomp = falling && pbBottom >= enemyTop
+                                       && (pbBottom - enemyTop) <= STOMP_TOLERANCE;
+
+                if (stomp) {
+                    e.kill();
+                    player.position.y = enemyTop; // colocar pies sobre el enemigo
+                    player.bounce(-320.0f);
+                    pb = player.bounds();
+                } else {
+                    resetLevel();
+                    diedThisFrame = true;
+                    break;
+                }
+            }
+        }
+
+        if (diedThisFrame) {
+            BeginDrawing(); ClearBackground((Color){138,197,255,255}); EndDrawing();
+            continue;
+        }
+
+        camera.target = { pb.x + pb.width*0.5f, pb.y + pb.height*0.5f };
+
+        BeginDrawing();
+        ClearBackground((Color){138,197,255,255});
+        DrawRetroBackgroundScreen();
+
+        BeginMode2D(camera);
+        for (const auto& e : envItems) {
+            if (e.blocking) DrawBricksFloor(e.rect);
+            else DrawRectangleRec(e.rect, e.color);
+        }
+        player.Draw();
+        for (const auto& e : enemies) e.draw();
+        EndMode2D();
+
+        DrawText("Salta sobre los enemigos para derrotarlos. Si te tocan, reinicias.",
+                 12, 10, 18, BLACK);
+        DrawText("Salta sobre los enemigos para derrotarlos. Si te tocan, reinicias.",
+                 10, 8, 18, RAYWHITE);
+
+        EndDrawing();
+    }
+
+    CloseWindow();
+    return 0;
 }

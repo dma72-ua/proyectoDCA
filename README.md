@@ -10,6 +10,10 @@ Desde el directorio raíz ejecutar:
 
 `g++ -o game src/*.cpp -I src/ -I vendor/include/ -L vendor/lib -lraylib -lGL -lm -lpthread -lrt -lX11`
 
+Si te error prueba este:
+
+`g++ -std=c++17 src/*.cpp -I/usr/local/include -L/usr/local/lib   -o game  -lraylib -lGL -lm -lpthread -ldl -lrt -lX11`
+
 y luego:
 
 `./game`
