@@ -107,27 +107,3 @@ Se sigue **SemVer 2.0.0**: `MAJOR.MINOR.PATCH` (`vX.Y.Z`).
 - **PATCH (Z)**: correcciones compatibles.  
   Ejemplo: arreglos de colisiones, ajuste de tolerancias de stomp, correcciones de HUD.
 
-**Pre-releases y metadatos (opcional)**
-- Pre-releases: `v1.3.0-alpha.1`, `v1.3.0-beta.2`, `v1.3.0-rc.1`.  
-- Metadatos de build: `v1.3.0+build.20251022` (no afecta orden de versiones).
-
-**Flujo de release**
-1. Actualizar `CHANGELOG.md` (mover `Unreleased` a `vX.Y.Z - YYYY-MM-DD`).  
-2. Commit:
-   ```bash
-   git add .
-   git commit -m "chore(release): v1.3.0"
-   ```
-3. Crear tag y publicar:
-   ```bash
-   git tag -a v1.3.0 -m "Release v1.3.0"
-   git push origin main --tags
-   ```
-4. Crear **GitHub Release** desde el tag `vX.Y.Z`, pegando las notas de `CHANGELOG.md`.
-
-**Buenas prácticas**
-- Mantener `main` siempre **deployable**; solo etiquetar versiones en `main`.
-- Usar **Conventional Commits** (`feat`, `fix`, `chore`, …) para facilitar changelogs automáticos.
-- No versionar ramas `feature/*` (la versión se decide al fusionar a `main`).
-
-
