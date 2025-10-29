@@ -4,7 +4,18 @@ Juego 2D tipo Mario Bros.
 
 GitHub Flow para gestión de ramas y GitHub Issues como sistema de Bugtracking.
 
-## Compilación y ejecutación del Juego
+## Ejecución del juego
+
+Primero darle permisos al fichero run.sh:
+
+`chmod +x run.sh`
+
+Luego ejecutar el script:
+
+`./run.sh`
+
+
+## Compilación y ejecutación del Juego manual
 
 Desde el directorio raíz ejecutar:
 
