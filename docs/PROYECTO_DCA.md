@@ -33,12 +33,12 @@ Juego de **plataformas retro 2D** estilo Mario clásico: el jugador avanza por n
 **Ramas**
 - `main`: estable y siempre desplegable. Etiquetada con `vX.Y.Z` en releases.
 - `feature/<nombre>`: nuevas funcionalidades o tareas.
-- `fix/<bug>`: correcciones específicas.
+- `hotfix/<bug>`: correcciones específicas.
 
 **Reglas**
 - Todo cambio a `main` entra mediante **Pull Request**.  
 - `main` protegida: al menos un **code review** y CI en verde.  
-- Commits atómicos y descriptivos. Convención: `feat: …`, `fix: …`, `docs: …`, `test: …`, `refactor: …`, `chore: …`.
+- Commits atómicos y descriptivos. 
 
 **Rituales y comunicación**
 - Reunión semanal breve: avance, bloqueos, decisiones.  
@@ -48,9 +48,12 @@ Juego de **plataformas retro 2D** estilo Mario clásico: el jugador avanza por n
 
 ## **3) Gestión de incidencias y planificación (GitHub Issues)**
 **Sistema:** GitHub Issues  
-- Etiquetas por tipo: `feat`, `bug`, `docs`, `tech-debt`, `good-first-issue`.  
-- Milestones por iteración.  
-- Asignación de responsables y definición de criterios de aceptación.
+
+Hemos elegido GitHub Issues porque es más simple, accesible e integrado con el repositorio que otras opciones. Además, su curva de aprendizaje es baja para el equipo y facilita un flujo de trabajo claro.
+
+- Etiquetas para control y prioridad: whishlist, normal, minor, important
+- Hemos creado 3 issues iniciales para registrar errores y mejoras detectadas.
+
 
 ---
 
