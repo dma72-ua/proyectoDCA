@@ -54,12 +54,12 @@ static void DrawGoal(const Rectangle &goal) {
 }
 
 int main() {
-  InitWindow(960, 540, "proyectoDCA – inicio/victoria/derrota");
+  InitWindow(960, 540, "proyectoDCA");
   SetTargetFPS(60);
 
   // Cámara
   Camera2D camera = {0};
-  camera.offset = {480, 270};
+  camera.offset = {480, 350};
   camera.zoom = 1.0f;
 
   // Escenario
