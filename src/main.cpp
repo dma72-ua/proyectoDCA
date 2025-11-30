@@ -5,11 +5,22 @@
 #include <vector>
 
 // ----------------- Estados de juego -----------------
-enum class GameState { START, PLAYING, VICTORY, DEFEAT, ALL_LEVELS_COMPLETE };
+enum class GameState { START, MENU, PLAYING, VICTORY, DEFEAT, ALL_LEVELS_COMPLETE };
 
 // ----------------- Constantes de interacción -----------------
 static constexpr float STOMP_TOLERANCE = 10.0f;
 static constexpr float FALLING_VY_MIN = 120.0f;
+ 
+// ----------------- Temas -----------------
+struct Theme {
+  const char *name;
+  Color skyColor;
+};
+ 
+static const std::vector<Theme> themes = {
+    {"DIA", (Color){138, 197, 255, 255}},
+    {"NOCHE", (Color){20, 24, 82, 255}},
+    {"ATARDECER", (Color){255, 145, 77, 255}}};
 
 // ----------------- Fondo retro (screen space) -----------------
 static void DrawRetroBackgroundScreen() {
@@ -74,6 +85,8 @@ int main() {
 
   // Estados
   GameState state = GameState::START;
+  int menuSelection = 0;
+  int themeSelection = 0;
 
   // Lambda para cargar el nivel actual
   auto loadCurrentLevel = [&]() {
@@ -102,6 +115,29 @@ int main() {
     // --------- INPUT de estado ---------
     if (state == GameState::START) {
       if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
+        state = GameState::MENU;
+      }
+    } else if (state == GameState::MENU) {
+      if (IsKeyPressed(KEY_DOWN)) {
+        menuSelection++;
+        if (menuSelection >= levelManager.getTotalLevels())
+          menuSelection = 0;
+      } else if (IsKeyPressed(KEY_UP)) {
+        menuSelection--;
+        if (menuSelection < 0)
+          menuSelection = levelManager.getTotalLevels() - 1;
+      } else if (IsKeyPressed(KEY_RIGHT)) {
+        themeSelection++;
+        if (themeSelection >= themes.size())
+          themeSelection = 0;
+      } else if (IsKeyPressed(KEY_LEFT)) {
+        themeSelection--;
+        if (themeSelection < 0)
+          themeSelection = themes.size() - 1;
+      }
+
+      if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
+        levelManager.setLevel(menuSelection);
         loadCurrentLevel();
         state = GameState::PLAYING;
       }
@@ -183,8 +219,10 @@ int main() {
 
     // --------- DRAW ---------
     BeginDrawing();
-    ClearBackground(currentLevel.skyColor);
-
+    // Usar el color del tema seleccionado en lugar del nivel
+    // ClearBackground(currentLevel.skyColor);
+    ClearBackground(themes[themeSelection].skyColor);
+ 
     DrawRetroBackgroundScreen();
 
     // Mundo
@@ -236,6 +274,31 @@ int main() {
       DrawText(t2, GetScreenWidth() / 2 - w2 / 2, 200, 24, RAYWHITE);
       DrawText(t3, GetScreenWidth() / 2 - w3 / 2 + 2, 240 + 2, 20, BLACK);
       DrawText(t3, GetScreenWidth() / 2 - w3 / 2, 240, 20, GREEN);
+    } else if (state == GameState::MENU) {
+      DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
+                    (Color){0, 0, 0, 120});
+      const char *title = "SELECCIONA UN NIVEL";
+      int wTitle = MeasureText(title, 32);
+      DrawText(title, GetScreenWidth() / 2 - wTitle / 2 + 2, 100 + 2, 32,
+               BLACK);
+      DrawText(title, GetScreenWidth() / 2 - wTitle / 2, 100, 32, RAYWHITE);
+
+      int startY = 180;
+      int spacing = 40;
+      for (int i = 0; i < levelManager.getTotalLevels(); i++) {
+        std::string name = levelManager.getLevelName(i);
+        Color c = (i == menuSelection) ? YELLOW : RAYWHITE;
+        if (i == menuSelection) {
+          DrawText(">", 200, startY + i * spacing, 24, YELLOW);
+        }
+        DrawText(name.c_str(), 230, startY + i * spacing, 24, c);
+      }
+ 
+      // Dibujar selector de tema
+      int themeY = startY + levelManager.getTotalLevels() * spacing + 40;
+      DrawText("TEMA (Izquierda/Derecha):", 200, themeY, 20, RAYWHITE);
+      const char *themeName = themes[themeSelection].name;
+      DrawText(TextFormat("< %s >", themeName), 480, themeY, 24, YELLOW);
     } else if (state == GameState::VICTORY) {
       DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
                     (Color){0, 255, 0, 60});
