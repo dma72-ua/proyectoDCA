@@ -27,6 +27,15 @@ public:
   int getCurrentLevelNumber() { return currentLevelIndex + 1; };
   int getTotalLevels() { return levels.size(); };
   bool isLastLevel() { return currentLevelIndex >= levels.size() - 1; };
+  void setLevel(int index) {
+    if (index >= 0 && index < levels.size())
+      currentLevelIndex = index;
+  };
+  std::string getLevelName(int index) {
+    if (index >= 0 && index < levels.size())
+      return levels[index].name;
+    return "";
+  };
 
 private:
   std::vector<Level> levels;
