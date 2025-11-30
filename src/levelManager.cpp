@@ -17,11 +17,11 @@ void LevelManager::initializeLevels() {
   // LEVEL 1 - Tutorial/Easy
   levels.push_back({
       "Nivel 1 - Primeros Pasos",
-      {60, 400},           // playerStart
-      {1700, 400, 8, 160}, // goal
+      {60, 440},           // playerStart
+      {1700, 440, 8, 160}, // goal
       {
           // envItems
-          {{-4000, 400, 8000, 200}, 1, (Color){191, 111, 60, 255}},
+          {{-4000, 440, 8000, 400}, 1, (Color){191, 111, 60, 255}},
           {{200, 340, 160, 20}, 1, (Color){191, 111, 60, 255}},
           {{500, 300, 160, 20}, 1, (Color){191, 111, 60, 255}},
           {{820, 260, 120, 20}, 1, (Color){191, 111, 60, 255}},
@@ -39,11 +39,11 @@ void LevelManager::initializeLevels() {
   // LEVEL 2 - Intermediate
   levels.push_back({
       "Nivel 2 - El Desafío",
-      {60, 300},           // playerStart
-      {2200, 400, 8, 160}, // goal
+      {60, 440},           // playerStart
+      {2200, 440, 8, 160}, // goal
       {
           // envItems
-          {{-4000, 400, 8000, 200}, 1, (Color){191, 111, 60, 255}},
+          {{-4000, 440, 8000, 400}, 1, (Color){191, 111, 60, 255}},
           {{150, 340, 120, 20}, 1, (Color){191, 111, 60, 255}},
           {{350, 280, 100, 20}, 1, (Color){191, 111, 60, 255}},
           {{550, 220, 140, 20}, 1, (Color){191, 111, 60, 255}},
@@ -68,11 +68,11 @@ void LevelManager::initializeLevels() {
   // LEVEL 3 - Advanced
   levels.push_back({
       "Nivel 3 - Maestría",
-      {60, 350},           // playerStart
-      {2800, 400, 8, 160}, // goal
+      {60, 440},           // playerStart
+      {2800, 440, 8, 160}, // goal
       {
           // envItems
-          {{-4000, 400, 8000, 200}, 1, (Color){191, 111, 60, 255}},
+          {{-4000, 440, 8000, 400}, 1, (Color){191, 111, 60, 255}},
           // Long jump section
           {{200, 340, 80, 20}, 1, (Color){191, 111, 60, 255}},
           {{380, 300, 80, 20}, 1, (Color){191, 111, 60, 255}},
