@@ -1,10 +1,11 @@
 #include "enemy.h"
 #include "envItem.h"
+#include "levelManager.h"
 #include "player.h"
 #include <vector>
 
 // ----------------- Estados de juego -----------------
-enum class GameState { START, PLAYING, VICTORY, DEFEAT };
+enum class GameState { START, PLAYING, VICTORY, DEFEAT, ALL_LEVELS_COMPLETE };
 
 // ----------------- Constantes de interacción -----------------
 static constexpr float STOMP_TOLERANCE = 10.0f;
@@ -54,88 +55,88 @@ static void DrawGoal(const Rectangle &goal) {
 }
 
 int main() {
-  InitWindow(960, 540, "proyectoDCA – inicio/victoria/derrota");
+  InitWindow(960, 540, "proyectoDCA");
   SetTargetFPS(60);
 
   // Cámara
   Camera2D camera = {0};
-  camera.offset = {480, 270};
+  camera.offset = {480, 350};
   camera.zoom = 1.0f;
 
-  // Escenario
-  std::vector<EnvItem> envItems = {
-      {{-4000, 400, 8000, 200}, 1, (Color){191, 111, 60, 255}}, // suelo
-      {{200, 340, 160, 20}, 1, (Color){191, 111, 60, 255}},
-      {{500, 300, 160, 20}, 1, (Color){191, 111, 60, 255}},
-      {{820, 260, 120, 20}, 1, (Color){191, 111, 60, 255}},
-      {{1100, 360, 48, 40}, 1, (Color){53, 148, 61, 255}}, // tubería
-  };
+  // Level Manager
+  LevelManager levelManager;
 
   // Jugador
   Player player{};
-  Vector2 startPos = {60, 400};
-  player.reset(startPos);
 
-  // Enemigos
-  std::vector<Enemy> enemies = {
-      Enemy({420, 0}, 32, 32, -1),
-      Enemy({860, 0}, 32, 32, +1),
-      Enemy({1300, 0}, 32, 32, -1),
-  };
-
-  // Objetivo (palo de bandera sobre el suelo)
-  // El suelo superior está en y=400 => colocamos el palo en x=1700
-  Rectangle goal = {1700, 400, 8, 160}; // (x, y suelo, ancho palo, alto)
+  // Enemigos (vector que se rellenará según el nivel)
+  std::vector<Enemy> enemies;
 
   // Estados
   GameState state = GameState::START;
 
-  auto resetLevel = [&]() {
-    player.reset(startPos);
-    enemies[0].reset({420, 0}, -1);
-    enemies[1].reset({860, 0}, +1);
-    enemies[2].reset({1300, 0}, -1);
-    // cámara cerca del jugador al iniciar
+  // Lambda para cargar el nivel actual
+  auto loadCurrentLevel = [&]() {
+    const Level &level = levelManager.getCurrentLevel();
+
+    // Reset player
+    player.reset(level.playerStart);
+
+    // Create enemies from spawn data
+    enemies.clear();
+    for (const auto &spawn : level.enemySpawns) {
+      enemies.push_back(Enemy(spawn.position, 32, 32, spawn.direction));
+    }
+
+    // Reset camera
     Rectangle pb = player.bounds();
     camera.target = {pb.x + pb.width * 0.5f, pb.y + pb.height * 0.5f};
   };
 
-  resetLevel();
+  loadCurrentLevel();
 
   while (!WindowShouldClose()) {
     float dt = GetFrameTime();
+    const Level &currentLevel = levelManager.getCurrentLevel();
 
     // --------- INPUT de estado ---------
     if (state == GameState::START) {
       if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
-        resetLevel();
+        loadCurrentLevel();
         state = GameState::PLAYING;
       }
     } else if (state == GameState::VICTORY) {
-      if (IsKeyPressed(KEY_ENTER)) {
-        resetLevel();
-        state = GameState::START;
-      }
-      if (IsKeyPressed(KEY_R) || IsKeyPressed(KEY_SPACE)) {
-        resetLevel();
-        state = GameState::PLAYING;
+      if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
+        if (levelManager.advanceLevel()) {
+          loadCurrentLevel();
+          state = GameState::PLAYING;
+        } else {
+          state = GameState::ALL_LEVELS_COMPLETE;
+        }
       }
     } else if (state == GameState::DEFEAT) {
       if (IsKeyPressed(KEY_ENTER)) {
-        resetLevel();
+        levelManager.resetToFirstLevel();
+        loadCurrentLevel();
         state = GameState::START;
       }
       if (IsKeyPressed(KEY_R) || IsKeyPressed(KEY_SPACE)) {
-        resetLevel();
+        loadCurrentLevel();
         state = GameState::PLAYING;
+      }
+    } else if (state == GameState::ALL_LEVELS_COMPLETE) {
+      if (IsKeyPressed(KEY_ENTER)) {
+        levelManager.resetToFirstLevel();
+        loadCurrentLevel();
+        state = GameState::START;
       }
     }
 
     // --------- UPDATE (solo durante PLAYING) ---------
     if (state == GameState::PLAYING) {
-      player.UpdatePlayer(envItems, dt);
+      player.UpdatePlayer(currentLevel.envItems, dt);
       for (auto &e : enemies)
-        e.update(dt, envItems);
+        e.update(dt, currentLevel.envItems);
 
       Rectangle pb = player.bounds();
 
@@ -155,7 +156,7 @@ int main() {
 
           if (stomp) {
             e.kill();
-            player.position.y = enemyTop; // colocar pies sobre el enemigo
+            player.position.y = enemyTop;
             player.bounce(-320.0f);
             pb = player.bounds();
           } else {
@@ -166,10 +167,12 @@ int main() {
         }
       }
 
-      // Victoria: tocar el objetivo (palo de la bandera)
+      // Victoria: tocar el objetivo
       if (!diedThisFrame) {
-        if (CheckCollisionRecs(
-                pb, {goal.x - 6, goal.y - goal.height, 40, goal.height})) {
+        Rectangle goalArea = {currentLevel.goal.x - 6,
+                              currentLevel.goal.y - currentLevel.goal.height,
+                              40, currentLevel.goal.height};
+        if (CheckCollisionRecs(pb, goalArea)) {
           state = GameState::VICTORY;
         }
       }
@@ -180,21 +183,19 @@ int main() {
 
     // --------- DRAW ---------
     BeginDrawing();
-    ClearBackground((Color){138, 197, 255, 255}); // cielo
+    ClearBackground(currentLevel.skyColor);
 
-    // Fondo estático
     DrawRetroBackgroundScreen();
 
     // Mundo
     BeginMode2D(camera);
-    for (const auto &e : envItems) {
+    for (const auto &e : currentLevel.envItems) {
       if (e.blocking)
         DrawBricksFloor(e.rect);
       else
         DrawRectangleRec(e.rect, e.color);
     }
-    // Objetivo
-    DrawGoal(goal);
+    DrawGoal(currentLevel.goal);
 
     // Entidades
     player.Draw();
@@ -209,27 +210,44 @@ int main() {
     DrawText("← →/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu.",
              10, 8, 18, RAYWHITE);
 
+    // Level indicator during gameplay
+    if (state == GameState::PLAYING) {
+      const char *levelText =
+          TextFormat("Nivel %d/%d", levelManager.getCurrentLevelNumber(),
+                     levelManager.getTotalLevels());
+      DrawText(levelText, GetScreenWidth() - 150, 10, 20, BLACK);
+      DrawText(levelText, GetScreenWidth() - 152, 8, 20, YELLOW);
+    }
+
     // Overlays por estado
     if (state == GameState::START) {
       DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
                     (Color){0, 0, 0, 120});
       const char *t1 = "PROYECTO DCA";
       const char *t2 = "Pulsa ENTER o ESPACIO para jugar";
+      const char *t3 =
+          TextFormat("%d niveles disponibles", levelManager.getTotalLevels());
       int w1 = MeasureText(t1, 48);
       int w2 = MeasureText(t2, 24);
-      DrawText(t1, GetScreenWidth() / 2 - w1 / 2 + 2, 150 + 2, 48, BLACK);
-      DrawText(t1, GetScreenWidth() / 2 - w1 / 2, 150, 48, RAYWHITE);
-      DrawText(t2, GetScreenWidth() / 2 - w2 / 2 + 2, 220 + 2, 24, BLACK);
-      DrawText(t2, GetScreenWidth() / 2 - w2 / 2, 220, 24, RAYWHITE);
+      int w3 = MeasureText(t3, 20);
+      DrawText(t1, GetScreenWidth() / 2 - w1 / 2 + 2, 120 + 2, 48, BLACK);
+      DrawText(t1, GetScreenWidth() / 2 - w1 / 2, 120, 48, RAYWHITE);
+      DrawText(t2, GetScreenWidth() / 2 - w2 / 2 + 2, 200 + 2, 24, BLACK);
+      DrawText(t2, GetScreenWidth() / 2 - w2 / 2, 200, 24, RAYWHITE);
+      DrawText(t3, GetScreenWidth() / 2 - w3 / 2 + 2, 240 + 2, 20, BLACK);
+      DrawText(t3, GetScreenWidth() / 2 - w3 / 2, 240, 20, GREEN);
     } else if (state == GameState::VICTORY) {
       DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
                     (Color){0, 255, 0, 60});
-      const char *t1 = "¡VICTORIA!";
-      const char *t2 = "ENTER: menu  |  R/ESPACIO: jugar de nuevo";
-      int w1 = MeasureText(t1, 48);
+      const char *t1 = levelManager.isLastLevel() ? "¡NIVEL FINAL COMPLETADO!"
+                                                  : "¡NIVEL COMPLETADO!";
+      const char *t2 = levelManager.isLastLevel()
+                           ? "ENTER: volver al menú"
+                           : "ENTER/ESPACIO: siguiente nivel";
+      int w1 = MeasureText(t1, 40);
       int w2 = MeasureText(t2, 24);
-      DrawText(t1, GetScreenWidth() / 2 - w1 / 2 + 2, 150 + 2, 48, BLACK);
-      DrawText(t1, GetScreenWidth() / 2 - w1 / 2, 150, 48,
+      DrawText(t1, GetScreenWidth() / 2 - w1 / 2 + 2, 150 + 2, 40, BLACK);
+      DrawText(t1, GetScreenWidth() / 2 - w1 / 2, 150, 40,
                (Color){255, 255, 180, 255});
       DrawText(t2, GetScreenWidth() / 2 - w2 / 2 + 2, 220 + 2, 24, BLACK);
       DrawText(t2, GetScreenWidth() / 2 - w2 / 2, 220, 24, RAYWHITE);
@@ -245,6 +263,21 @@ int main() {
                (Color){255, 200, 200, 255});
       DrawText(t2, GetScreenWidth() / 2 - w2 / 2 + 2, 220 + 2, 24, BLACK);
       DrawText(t2, GetScreenWidth() / 2 - w2 / 2, 220, 24, RAYWHITE);
+    } else if (state == GameState::ALL_LEVELS_COMPLETE) {
+      DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
+                    (Color){255, 215, 0, 80});
+      const char *t1 = "¡TODOS LOS NIVELES COMPLETADOS!";
+      const char *t2 = "¡FELICIDADES!";
+      const char *t3 = "ENTER: volver al menú";
+      int w1 = MeasureText(t1, 36);
+      int w2 = MeasureText(t2, 48);
+      int w3 = MeasureText(t3, 24);
+      DrawText(t1, GetScreenWidth() / 2 - w1 / 2 + 2, 100 + 2, 36, BLACK);
+      DrawText(t1, GetScreenWidth() / 2 - w1 / 2, 100, 36, YELLOW);
+      DrawText(t2, GetScreenWidth() / 2 - w2 / 2 + 2, 160 + 2, 48, BLACK);
+      DrawText(t2, GetScreenWidth() / 2 - w2 / 2, 160, 48, GOLD);
+      DrawText(t3, GetScreenWidth() / 2 - w3 / 2 + 2, 240 + 2, 24, BLACK);
+      DrawText(t3, GetScreenWidth() / 2 - w3 / 2, 240, 24, RAYWHITE);
     }
 
     EndDrawing();

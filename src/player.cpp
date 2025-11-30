@@ -1,6 +1,6 @@
 #include "player.h"
 #include <vector>
-#define GRAVITY 400
+#define GRAVITY 600
 
 Player::Player(Vector2 position, float speed, bool canJump) {
   this->position = position;
@@ -42,8 +42,8 @@ void Player::updatePlayer(float delta, std::vector<EnvItem> &envItems) {
 }
 
 void Player::draw() {
-    // Dibujo simple del jugador como un rectángulo (ajústalo si quieres sprite)
-    Rectangle r = bounds();
-    DrawRectangleRec(r, (Color){66, 135, 245, 255});
-    DrawRectangleLinesEx(r, 2, BLACK);
+  // Dibujo simple del jugador como un rectángulo (ajústalo si quieres sprite)
+  Rectangle r = bounds();
+  DrawRectangleRec(r, (Color){66, 135, 245, 255});
+  DrawRectangleLinesEx(r, 2, BLACK);
 }
