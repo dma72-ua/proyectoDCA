@@ -5,6 +5,7 @@
 #include <thread>
 #include "textureManager.h"
 #include <vector>
+#include "coin.h"
 
 // ----------------- Estados de juego -----------------
 enum class GameState { START, MENU, PLAYING, VICTORY, DEFEAT, ALL_LEVELS_COMPLETE };
@@ -97,6 +98,7 @@ int main() {
   InitWindow(960, 540, "proyectoDCA");
   SetTargetFPS(60);
 
+  Font uiFont = GetFontDefault();
   // Cargar texturas globales
   TextureManager::Instance().Load("player", "assets/player.png");
   TextureManager::Instance().Load("enemy", "assets/enemy.png");
@@ -107,6 +109,12 @@ int main() {
   Camera2D camera = {0};
   camera.offset = {480, 350};
   camera.zoom = 0.875f;
+
+  //Monedas
+  std::vector<Coin> coins;
+  int score = 0;
+  int coinsCollected = 0;
+  int totalCoinsInLevel = 0;
 
   // Level Manager
   LevelManager levelManager;
@@ -134,6 +142,14 @@ int main() {
     for (const auto &spawn : level.enemySpawns) {
       enemies.push_back(Enemy(spawn.position, 32, 32, spawn.direction));
     }
+
+    // Create coins from level data
+    coins.clear();
+    for (const auto &pos : level.coinPositions) {
+        coins.push_back(Coin(pos));
+    }
+    totalCoinsInLevel = coins.size();
+    coinsCollected = 0;
 
     // Reset camera
     Rectangle pb = player.bounds();
@@ -209,7 +225,14 @@ int main() {
         e.update(dt, currentLevel.envItems);
 
       Rectangle pb = player.bounds();
-
+        // Recolección de monedas
+        for (auto &coin : coins) {
+          if (coin.checkCollision(pb)) {
+            coin.startCollect(); 
+              coinsCollected++;
+              score += 100;
+          }
+      }
       // Colisión con enemigos (stomp vs derrota)
       bool diedThisFrame = false;
       for (auto &e : enemies) {
@@ -229,6 +252,7 @@ int main() {
             player.position.y = enemyTop;
             player.bounce(-320.0f);
             pb = player.bounds();
+            score += 200;
           } else {
             state = GameState::DEFEAT;
             diedThisFrame = true;
@@ -315,8 +339,17 @@ int main() {
     player.Draw();
     for (const auto &en : enemies)
       en.draw();
+    
+    // Monedas
+    for (const auto &coin : coins) coin.draw();
 
     EndMode2D();
+
+    // UI - Mostrar puntuación
+    const char* scoreText = TextFormat("Monedas: %d/%d  Puntos: %d", coinsCollected, totalCoinsInLevel, score);
+
+    DrawText(scoreText, 10, 50, 22, BLACK);
+    DrawText(scoreText, 8, 48, 22, (Color){255, 215, 0, 255});
 
     // UI Base
     DrawText(

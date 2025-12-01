@@ -33,7 +33,17 @@ void LevelManager::initializeLevels() {
           {{860, 0}, +1},
           {{1300, 0}, -1},
       },
-      {138, 197, 255, 255} // skyColor
+      {138, 197, 255, 255}, // skyColor
+
+      // MONEDAS NIVEL 1 - En plataformas y rutas principales
+      {
+        {240, 300},   // Primera plataforma
+        {540, 260},   // Segunda plataforma  
+        {860, 220},   // Tercera plataforma
+        {1120, 320},  // Antes del primer tubo
+        {1350, 360},  // Entre enemigos
+        {1500, 360},  // Camino al objetivo
+      }
   });
 
   // LEVEL 2 - Intermediate
@@ -62,7 +72,19 @@ void LevelManager::initializeLevels() {
           {{1150, 0}, -1},
           {{1600, 0}, +1},
       },
-      {120, 180, 255, 255} // skyColor - slightly different
+      {120, 180, 255, 255}, // skyColor - slightly different
+
+      {
+        {190, 300},   // Primera plataforma
+        {400, 240},   // Plataforma alta
+        {600, 180},   // Punto más alto del nivel
+        {850, 240},   // Después del salto
+        {1050, 300},  // Plataforma descendente
+        {1250, 240},  // Antes del tubo
+        {1480, 320},  // Sobre el primer tubo
+        {1750, 280},  // Plataforma final
+        {1920, 320},  // Último tubo antes de la meta
+      }
   });
 
   // LEVEL 3 - Advanced
@@ -104,6 +126,24 @@ void LevelManager::initializeLevels() {
           {{2100, 0}, -1},
           {{2300, 0}, +1},
       },
-      {100, 150, 240, 255} // skyColor - darker for difficulty
+      {100, 150, 240, 255}, // skyColor - darker for difficulty
+
+          // MONEDAS NIVEL 3 - En lugares que requieren precisión
+      {
+        {240, 300},   // Primera plataforma
+        {420, 260},   // Segunda plataforma
+        {600, 220},   // Tercera plataforma
+        {780, 180},   // Plataforma pequeña alta
+        {900, 220},   // Plataforma descendente
+        {1020, 180},  // Plataforma pequeña final
+        {1180, 320},  // Antes del primer tubo
+        {1350, 300},  // Plataforma entre tubos
+        {1520, 320},  // Sobre segundo tubo
+        {1700, 260},  // Plataforma alta
+        {1880, 320},  // Sobre tercer tubo
+        {2060, 300},  // Inicio del final
+        {2250, 240},  // Plataforma alta final
+        {2460, 300},  // Antes de la meta
+      }
   });
 }
