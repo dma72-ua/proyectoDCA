@@ -1,5 +1,5 @@
 #include "player.h"
-#include "textureManager.h"
+#include "../core/textureManager.h"
 #include <vector>
 #define GRAVITY 600
 

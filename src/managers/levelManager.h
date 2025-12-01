@@ -29,11 +29,11 @@ public:
   int getTotalLevels() { return levels.size(); };
   bool isLastLevel() { return currentLevelIndex >= levels.size() - 1; };
   void setLevel(int index) {
-    if (index >= 0 && index < levels.size())
+    if (index >= 0 && static_cast<size_t>(index) < levels.size())
       currentLevelIndex = index;
   };
   std::string getLevelName(int index) {
-    if (index >= 0 && index < levels.size())
+    if (index >= 0 && static_cast<size_t>(index) < levels.size())
       return levels[index].name;
     return "";
   };
