@@ -6,6 +6,7 @@
 #include "textureManager.h"
 #include <vector>
 #include "coin.h"
+#include <cmath>
 
 // ----------------- Estados de juego -----------------
 enum class GameState { START, MENU, PLAYING, VICTORY, DEFEAT, ALL_LEVELS_COMPLETE };
@@ -104,6 +105,7 @@ int main() {
   TextureManager::Instance().Load("enemy", "assets/enemy.png");
   TextureManager::Instance().Load("bricks", "assets/bricks.png");
   TextureManager::Instance().Load("pipe", "assets/pipe.png");
+  TextureManager::Instance().Load("heart", "assets/heart.png");
 
   // Cámara
   Camera2D camera = {0};
@@ -115,6 +117,12 @@ int main() {
   int score = 0;
   int coinsCollected = 0;
   int totalCoinsInLevel = 0;
+
+  // Vidas
+  int playerLives = 3;
+  const int MAX_LIVES = 3;
+  float invincibilityTimer = 0.0f;  // Timer de invencibilidad
+  const float INVINCIBILITY_DURATION = 2.0f;  // 2 segundos de invencibilidad
 
   // Level Manager
   LevelManager levelManager;
@@ -150,6 +158,10 @@ int main() {
     }
     totalCoinsInLevel = coins.size();
     coinsCollected = 0;
+    
+    // Reset lives when loading level
+    playerLives = MAX_LIVES;
+    printf("DEBUG: Nivel cargado. Vidas reseteadas a: %d\n", playerLives);
 
     // Reset camera
     Rectangle pb = player.bounds();
@@ -220,6 +232,10 @@ int main() {
 
     // --------- UPDATE (solo durante PLAYING) ---------
     if (state == GameState::PLAYING) {
+      // Actualizar timer de invencibilidad
+      if (invincibilityTimer > 0.0f) {
+        invincibilityTimer -= dt;
+      }
       player.UpdatePlayer(currentLevel.envItems, dt);
       for (auto &e : enemies)
         e.update(dt, currentLevel.envItems);
@@ -238,6 +254,11 @@ int main() {
       for (auto &e : enemies) {
         if (!e.alive)
           continue;
+        
+        // Skip collision if player is invincible
+        if (invincibilityTimer > 0.0f)
+          continue;
+          
         Rectangle eb = e.bounds();
         if (CheckCollisionRecs(pb, eb)) {
           float pbBottom = pb.y + pb.height;
@@ -254,8 +275,19 @@ int main() {
             pb = player.bounds();
             score += 200;
           } else {
-            state = GameState::DEFEAT;
-            diedThisFrame = true;
+            // Perder una vida
+            playerLives--;
+            printf("DEBUG: Perdiste una vida! Vidas restantes: %d\n", playerLives);
+            
+            // Activar invencibilidad
+            invincibilityTimer = INVINCIBILITY_DURATION;
+            
+            if (playerLives <= 0) {
+              state = GameState::DEFEAT;
+              diedThisFrame = true;
+            } else {
+              player.bounce(-200.0f); // Pequeño rebote para feedback visual
+            }
             break;
           }
         }
@@ -336,7 +368,10 @@ int main() {
     DrawGoal(currentLevel.goal);
 
     // Entidades
-    player.Draw();
+    // Draw player with blink effect if invincible
+    if (invincibilityTimer <= 0.0f || fmod(invincibilityTimer * 10.0f, 1.0f) > 0.5f) {
+      player.Draw();
+    }
     for (const auto &en : enemies)
       en.draw();
     
@@ -350,6 +385,31 @@ int main() {
 
     DrawText(scoreText, 10, 50, 22, BLACK);
     DrawText(scoreText, 8, 48, 22, (Color){255, 215, 0, 255});
+
+    // Dibujar corazones (vidas)
+    Texture2D heartTex = TextureManager::Instance().Get("heart");
+    if (heartTex.id != 0) {
+      int heartSize = 30;
+      int heartSpacing = 35;
+      int startX = GetScreenWidth() - (MAX_LIVES * heartSpacing) - 10;
+      int startY = 50;
+      
+      for (int i = 0; i < MAX_LIVES; i++) {
+        if (i < playerLives) {
+          // Dibujar corazón lleno
+          DrawTexturePro(heartTex, 
+            {0, 0, (float)heartTex.width, (float)heartTex.height},
+            {(float)(startX + i * heartSpacing), (float)startY, (float)heartSize, (float)heartSize},
+            {0, 0}, 0.0f, WHITE);
+        } else {
+          // Dibujar corazón vacío (con transparencia)
+          DrawTexturePro(heartTex, 
+            {0, 0, (float)heartTex.width, (float)heartTex.height},
+            {(float)(startX + i * heartSpacing), (float)startY, (float)heartSize, (float)heartSize},
+            {0, 0}, 0.0f, (Color){255, 255, 255, 80});
+        }
+      }
+    }
 
     // UI Base
     DrawText(

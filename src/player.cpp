@@ -24,20 +24,41 @@ Player::Player(Vector2 position, float speed, bool canJump) {
 }
 
 void Player::updatePlayer(float delta, std::vector<EnvItem> &envItems) {
+  // Movimiento horizontal
+  float deltaX = 0;
   if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
-    position.x -= PLAYER_MOVE_SPEED * delta;
+    deltaX -= PLAYER_MOVE_SPEED * delta;
     isFacingRight = false;
   }
   if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
-    position.x += PLAYER_MOVE_SPEED * delta;
+    deltaX += PLAYER_MOVE_SPEED * delta;
     isFacingRight = true;
   }
+
+  position.x += deltaX;
+
+  // Colisión horizontal
+  Rectangle playerRect = {position.x, position.y - height, width, height};
+  for (auto &envItem : envItems) {
+    if (envItem.blocking && CheckCollisionRecs(playerRect, envItem.rect)) {
+      if (deltaX > 0) {
+        // Moviendo a la derecha, colocar al jugador justo a la izquierda del obstáculo
+        position.x = envItem.rect.x - width;
+      } else if (deltaX < 0) {
+        // Moviendo a la izquierda, colocar al jugador justo a la derecha del obstáculo
+        position.x = envItem.rect.x + envItem.rect.width;
+      }
+    }
+  }
+
+  // Salto
   if ((IsKeyDown(KEY_SPACE) || IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) &&
       canJump) {
     speed = -PLAYER_JUMP_SPEED;
     canJump = false;
   }
 
+  // Colisión vertical
   bool hitObstacle = false;
 
   for (auto &envItem : envItems) {
