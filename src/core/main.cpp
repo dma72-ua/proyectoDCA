@@ -1,11 +1,11 @@
-#include "enemy.h"
-#include "envItem.h"
-#include "levelManager.h"
-#include "player.h"
+#include "entities/enemy.h"
+#include "managers/envItem.h"
+#include "managers/levelManager.h"
+#include "entities/player.h"
 #include <thread>
-#include "textureManager.h"
+#include "core/textureManager.h"
 #include <vector>
-#include "coin.h"
+#include "entities/coin.h"
 #include <cmath>
 
 // ----------------- Estados de juego -----------------

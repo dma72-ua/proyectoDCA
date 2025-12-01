@@ -3,7 +3,7 @@ extern "C" {
 #include "../vendor/include/raylib.h"
 }
 #include <vector>
-#include "envItem.h"
+#include "../managers/envItem.h"
 
 class Player {
 public:

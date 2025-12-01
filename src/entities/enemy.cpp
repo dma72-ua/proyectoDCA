@@ -1,5 +1,5 @@
 #include "enemy.h"
-#include "textureManager.h"
+#include "../core/textureManager.h"
 
 static constexpr float GRAVITY_E   = 900.0f;  // px/s^2
 static constexpr float ENEMY_SPEED = 80.0f;   // px/s
