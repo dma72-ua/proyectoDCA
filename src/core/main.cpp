@@ -27,18 +27,18 @@ struct GameAudio {
   void Load() {
     backgroundMusic = LoadMusicStream("assets/music.mp3");
     jumpSound = LoadSound("assets/jump.mp3");
-    coinSound = LoadSound("assets/coin.mp3mp3");
+    coinSound = LoadSound("assets/coin.mp3");
     stompSound = LoadSound("assets/stomp.mp3");
     hurtSound = LoadSound("assets/hurt.mp3");
     victorySound = LoadSound("assets/victory.mp3");
     
     // Ajustar volúmenes (0.0f a 1.0f)
-    SetMusicVolume(backgroundMusic, 0.3f);
-    SetSoundVolume(jumpSound, 0.5f);
-    SetSoundVolume(coinSound, 0.4f);
-    SetSoundVolume(stompSound, 0.5f);
+    SetMusicVolume(backgroundMusic, 0.45f);
+    SetSoundVolume(jumpSound, 0.3f);
+    SetSoundVolume(coinSound, 0.7f);
+    SetSoundVolume(stompSound, 0.7f);
     SetSoundVolume(hurtSound, 0.6f);
-    SetSoundVolume(victorySound, 0.7f);
+    SetSoundVolume(victorySound, 0.6f);
   }
   
   void Unload() {
