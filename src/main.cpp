@@ -3,14 +3,26 @@
 #include "levelManager.h"
 #include "player.h"
 #include <thread>
+#include "textureManager.h"
 #include <vector>
 
 // ----------------- Estados de juego -----------------
-enum class GameState { START, PLAYING, VICTORY, DEFEAT, ALL_LEVELS_COMPLETE };
+enum class GameState { START, MENU, PLAYING, VICTORY, DEFEAT, ALL_LEVELS_COMPLETE };
 
 // ----------------- Constantes de interacción -----------------
 static constexpr float STOMP_TOLERANCE = 10.0f;
 static constexpr float FALLING_VY_MIN = 120.0f;
+ 
+// ----------------- Temas -----------------
+struct Theme {
+  const char *name;
+  Color skyColor;
+};
+ 
+static const std::vector<Theme> themes = {
+    {"DIA", (Color){138, 197, 255, 255}},
+    {"NOCHE", (Color){20, 24, 82, 255}},
+    {"ATARDECER", (Color){255, 145, 77, 255}}};
 
 // ----------------- Fondo retro (screen space) -----------------
 static void DrawRetroBackgroundScreen() {
@@ -85,6 +97,12 @@ int main() {
   InitWindow(960, 540, "proyectoDCA");
   SetTargetFPS(60);
 
+  // Cargar texturas globales
+  TextureManager::Instance().Load("player", "assets/player.png");
+  TextureManager::Instance().Load("enemy", "assets/enemy.png");
+  TextureManager::Instance().Load("bricks", "assets/bricks.png");
+  TextureManager::Instance().Load("pipe", "assets/pipe.png");
+
   // Cámara
   Camera2D camera = {0};
   camera.offset = {480, 350};
@@ -101,6 +119,8 @@ int main() {
 
   // Estados
   GameState state = GameState::START;
+  int menuSelection = 0;
+  int themeSelection = 0;
 
   // Lambda para cargar el nivel actual
   auto loadCurrentLevel = [&]() {
@@ -129,6 +149,29 @@ int main() {
     // --------- INPUT de estado ---------
     if (state == GameState::START) {
       if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
+        state = GameState::MENU;
+      }
+    } else if (state == GameState::MENU) {
+      if (IsKeyPressed(KEY_DOWN)) {
+        menuSelection++;
+        if (menuSelection >= levelManager.getTotalLevels())
+          menuSelection = 0;
+      } else if (IsKeyPressed(KEY_UP)) {
+        menuSelection--;
+        if (menuSelection < 0)
+          menuSelection = levelManager.getTotalLevels() - 1;
+      } else if (IsKeyPressed(KEY_RIGHT)) {
+        themeSelection++;
+        if (themeSelection >= themes.size())
+          themeSelection = 0;
+      } else if (IsKeyPressed(KEY_LEFT)) {
+        themeSelection--;
+        if (themeSelection < 0)
+          themeSelection = themes.size() - 1;
+      }
+
+      if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
+        levelManager.setLevel(menuSelection);
         loadCurrentLevel();
         state = GameState::PLAYING;
       }
@@ -211,17 +254,60 @@ int main() {
 
     // --------- DRAW ---------
     BeginDrawing();
-    ClearBackground(currentLevel.skyColor);
-
+    // Usar el color del tema seleccionado en lugar del nivel
+    // ClearBackground(currentLevel.skyColor);
+    ClearBackground(themes[themeSelection].skyColor);
+ 
     DrawRetroBackgroundScreen();
 
     // Mundo
     BeginMode2D(camera);
     for (const auto &e : currentLevel.envItems) {
-      if (e.blocking)
-        DrawBricksFloor(e.rect);
-      else
-        DrawRectangleRec(e.rect, e.color);
+      bool drawn = false;
+      // Si tiene textureId, intentamos dibujar textura
+      if (e.textureId == 1) { // Bricks
+          Texture2D tex = TextureManager::Instance().Get("bricks");
+          if (tex.id != 0) {
+              // Manual Tiling con escalado
+              // Forzamos que la textura ocupe un tile de 64x64 para más detalle
+              float tileSize = 64.0f;
+              
+              for (float y = 0; y < e.rect.height; y += tileSize) {
+                  for (float x = 0; x < e.rect.width; x += tileSize) {
+                      // Calcular ancho/alto restante
+                      float drawW = (e.rect.width - x < tileSize) ? (e.rect.width - x) : tileSize;
+                      float drawH = (e.rect.height - y < tileSize) ? (e.rect.height - y) : tileSize;
+                      
+                      // Fuente: tomamos toda la textura (o una parte proporcional si drawW < tileSize)
+                      // Si queremos que se corte, ajustamos source.width
+                      // Si queremos que se escale (squash), usamos toda la source.
+                      // Lo mejor para tiles es cortar.
+                      
+                      float sourceW = (drawW / tileSize) * tex.width;
+                      float sourceH = (drawH / tileSize) * tex.height;
+                      
+                      Rectangle source = { 0, 0, sourceW, sourceH };
+                      Rectangle dest = { e.rect.x + x, e.rect.y + y, drawW, drawH };
+                      
+                      DrawTexturePro(tex, source, dest, {0,0}, 0.0f, WHITE);
+                  }
+              }
+              drawn = true;
+          }
+      } else if (e.textureId == 2) { // Pipe
+          Texture2D tex = TextureManager::Instance().Get("pipe");
+          if (tex.id != 0) {
+               DrawTexturePro(tex, {0,0,(float)tex.width,(float)tex.height}, e.rect, {0,0}, 0.0f, WHITE);
+               drawn = true;
+          }
+      }
+
+      if (!drawn) {
+          if (e.blocking)
+            DrawBricksFloor(e.rect);
+          else
+            DrawRectangleRec(e.rect, e.color);
+      }
     }
     DrawGoal(currentLevel.goal);
 
@@ -266,6 +352,31 @@ int main() {
       DrawText(t2, GetScreenWidth() / 2 - w2 / 2, 200, 24, RAYWHITE);
       DrawText(t3, GetScreenWidth() / 2 - w3 / 2 + 2, 240 + 2, 20, BLACK);
       DrawText(t3, GetScreenWidth() / 2 - w3 / 2, 240, 20, GREEN);
+    } else if (state == GameState::MENU) {
+      DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
+                    (Color){0, 0, 0, 120});
+      const char *title = "SELECCIONA UN NIVEL";
+      int wTitle = MeasureText(title, 32);
+      DrawText(title, GetScreenWidth() / 2 - wTitle / 2 + 2, 100 + 2, 32,
+               BLACK);
+      DrawText(title, GetScreenWidth() / 2 - wTitle / 2, 100, 32, RAYWHITE);
+
+      int startY = 180;
+      int spacing = 40;
+      for (int i = 0; i < levelManager.getTotalLevels(); i++) {
+        std::string name = levelManager.getLevelName(i);
+        Color c = (i == menuSelection) ? YELLOW : RAYWHITE;
+        if (i == menuSelection) {
+          DrawText(">", 200, startY + i * spacing, 24, YELLOW);
+        }
+        DrawText(name.c_str(), 230, startY + i * spacing, 24, c);
+      }
+ 
+      // Dibujar selector de tema
+      int themeY = startY + levelManager.getTotalLevels() * spacing + 40;
+      DrawText("TEMA (Izquierda/Derecha):", 200, themeY, 20, RAYWHITE);
+      const char *themeName = themes[themeSelection].name;
+      DrawText(TextFormat("< %s >", themeName), 480, themeY, 24, YELLOW);
     } else if (state == GameState::VICTORY) {
       DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
                     (Color){0, 255, 0, 60});
@@ -313,6 +424,7 @@ int main() {
     EndDrawing();
   }
 
+  TextureManager::Instance().UnloadAll();
   CloseWindow();
   return 0;
 }
