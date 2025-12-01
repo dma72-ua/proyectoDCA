@@ -2,6 +2,7 @@
 #include "envItem.h"
 #include "levelManager.h"
 #include "player.h"
+#include <thread>
 #include "textureManager.h"
 #include <vector>
 
@@ -66,6 +67,32 @@ static void DrawGoal(const Rectangle &goal) {
                (Color){220, 40, 40, 255});
 }
 
+void UpdateCameraPlayerBoundsPush(Camera2D *camera, Player *player) {
+  static Vector2 bbox = {0.2f, 0.2f};
+
+  float delta = GetFrameTime();
+  float width = GetScreenWidth();
+  float height = GetScreenHeight();
+
+  Vector2 bboxWorldMin = GetScreenToWorld2D(
+      (Vector2){(1 - bbox.x) * 0.5f * width, (1 - bbox.y) * 0.5f * height},
+      *camera);
+  Vector2 bboxWorldMax = GetScreenToWorld2D(
+      (Vector2){(1 + bbox.x) * 0.5f * width, (1 + bbox.y) * 0.5f * height},
+      *camera);
+  camera->offset =
+      (Vector2){(1 - bbox.x) * 0.5f * width, (1 - bbox.y) * 0.5f * height};
+
+  if (player->position.x < bboxWorldMin.x)
+    camera->target.x = player->position.x;
+  if (player->position.y < bboxWorldMin.y)
+    camera->target.y = player->position.y;
+  if (player->position.x > bboxWorldMax.x)
+    camera->target.x = bboxWorldMin.x + (player->position.x - bboxWorldMax.x);
+  if (player->position.y > bboxWorldMax.y)
+    camera->target.y = bboxWorldMin.y + (player->position.y - bboxWorldMax.y);
+}
+
 int main() {
   InitWindow(960, 540, "proyectoDCA");
   SetTargetFPS(60);
@@ -79,7 +106,7 @@ int main() {
   // Cámara
   Camera2D camera = {0};
   camera.offset = {480, 350};
-  camera.zoom = 1.0f;
+  camera.zoom = 0.875f;
 
   // Level Manager
   LevelManager levelManager;
@@ -221,7 +248,8 @@ int main() {
       }
 
       // Cámara sigue al jugador
-      camera.target = {pb.x + pb.width * 0.5f, pb.y + pb.height * 0.5f};
+      // camera.target = {pb.x + pb.width * 0.5f, pb.y + pb.height * 0.5f};
+      UpdateCameraPlayerBoundsPush(&camera, &player);
     }
 
     // --------- DRAW ---------
@@ -291,10 +319,12 @@ int main() {
     EndMode2D();
 
     // UI Base
-    DrawText("← →/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu.",
-             12, 10, 18, BLACK);
-    DrawText("← →/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu.",
-             10, 8, 18, RAYWHITE);
+    DrawText(
+        "Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu.",
+        12, 10, 18, BLACK);
+    DrawText(
+        "Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu.",
+        10, 8, 18, RAYWHITE);
 
     // Level indicator during gameplay
     if (state == GameState::PLAYING) {

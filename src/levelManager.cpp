@@ -17,8 +17,8 @@ void LevelManager::initializeLevels() {
   // LEVEL 1 - Tutorial/Easy
   levels.push_back({
       "Nivel 1 - Primeros Pasos",
-      {60, 400},           // playerStart
-      {1700, 400, 8, 160}, // goal
+      {60, 440},           // playerStart
+      {1700, 440, 8, 160}, // goal
       {
           // envItems
           {{-4000, 400, 8000, 200}, 1, (Color){191, 111, 60, 255}, 1}, // 1 = Bricks
@@ -39,8 +39,8 @@ void LevelManager::initializeLevels() {
   // LEVEL 2 - Intermediate
   levels.push_back({
       "Nivel 2 - El Desafío",
-      {60, 300},           // playerStart
-      {2200, 400, 8, 160}, // goal
+      {60, 440},           // playerStart
+      {2200, 440, 8, 160}, // goal
       {
           // envItems
           {{-4000, 400, 8000, 200}, 1, (Color){191, 111, 60, 255}, 1},
@@ -68,11 +68,12 @@ void LevelManager::initializeLevels() {
   // LEVEL 3 - Advanced
   levels.push_back({
       "Nivel 3 - Maestría",
-      {60, 350},           // playerStart
-      {2800, 400, 8, 160}, // goal
+      {60, 440},           // playerStart
+      {2800, 440, 8, 160}, // goal
       {
           // envItems
           {{-4000, 400, 8000, 200}, 1, (Color){191, 111, 60, 255}, 1},
+
           // Long jump section
           {{200, 340, 80, 20}, 1, (Color){191, 111, 60, 255}, 1},
           {{380, 300, 80, 20}, 1, (Color){191, 111, 60, 255}, 1},
