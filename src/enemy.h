@@ -21,6 +21,13 @@ public:
 
     Rectangle bounds() const { return rect; }
 
+    // --- Modeling Support ---
+    Texture2D texture = {0};
+    Rectangle frameRec = {0,0,0,0};
+    int currentFrame = 0;
+    int framesCounter = 0;
+    int framesSpeed = 8;
+
 private:
     Vector2 spawnPos;
 };

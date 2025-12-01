@@ -2,6 +2,8 @@
 #include "envItem.h"
 #include "levelManager.h"
 #include "player.h"
+#include <thread>
+#include "textureManager.h"
 #include <vector>
 #include "coin.h"
 
@@ -66,16 +68,47 @@ static void DrawGoal(const Rectangle &goal) {
                (Color){220, 40, 40, 255});
 }
 
+void UpdateCameraPlayerBoundsPush(Camera2D *camera, Player *player) {
+  static Vector2 bbox = {0.2f, 0.2f};
+
+  float delta = GetFrameTime();
+  float width = GetScreenWidth();
+  float height = GetScreenHeight();
+
+  Vector2 bboxWorldMin = GetScreenToWorld2D(
+      (Vector2){(1 - bbox.x) * 0.5f * width, (1 - bbox.y) * 0.5f * height},
+      *camera);
+  Vector2 bboxWorldMax = GetScreenToWorld2D(
+      (Vector2){(1 + bbox.x) * 0.5f * width, (1 + bbox.y) * 0.5f * height},
+      *camera);
+  camera->offset =
+      (Vector2){(1 - bbox.x) * 0.5f * width, (1 - bbox.y) * 0.5f * height};
+
+  if (player->position.x < bboxWorldMin.x)
+    camera->target.x = player->position.x;
+  if (player->position.y < bboxWorldMin.y)
+    camera->target.y = player->position.y;
+  if (player->position.x > bboxWorldMax.x)
+    camera->target.x = bboxWorldMin.x + (player->position.x - bboxWorldMax.x);
+  if (player->position.y > bboxWorldMax.y)
+    camera->target.y = bboxWorldMin.y + (player->position.y - bboxWorldMax.y);
+}
+
 int main() {
   InitWindow(960, 540, "proyectoDCA");
   SetTargetFPS(60);
 
   Font uiFont = GetFontDefault();
+  // Cargar texturas globales
+  TextureManager::Instance().Load("player", "assets/player.png");
+  TextureManager::Instance().Load("enemy", "assets/enemy.png");
+  TextureManager::Instance().Load("bricks", "assets/bricks.png");
+  TextureManager::Instance().Load("pipe", "assets/pipe.png");
 
   // Cámara
   Camera2D camera = {0};
   camera.offset = {480, 350};
-  camera.zoom = 1.0f;
+  camera.zoom = 0.875f;
 
   //Monedas
   std::vector<Coin> coins;
@@ -239,7 +272,8 @@ int main() {
       }
 
       // Cámara sigue al jugador
-      camera.target = {pb.x + pb.width * 0.5f, pb.y + pb.height * 0.5f};
+      // camera.target = {pb.x + pb.width * 0.5f, pb.y + pb.height * 0.5f};
+      UpdateCameraPlayerBoundsPush(&camera, &player);
     }
 
     // --------- DRAW ---------
@@ -253,10 +287,51 @@ int main() {
     // Mundo
     BeginMode2D(camera);
     for (const auto &e : currentLevel.envItems) {
-      if (e.blocking)
-        DrawBricksFloor(e.rect);
-      else
-        DrawRectangleRec(e.rect, e.color);
+      bool drawn = false;
+      // Si tiene textureId, intentamos dibujar textura
+      if (e.textureId == 1) { // Bricks
+          Texture2D tex = TextureManager::Instance().Get("bricks");
+          if (tex.id != 0) {
+              // Manual Tiling con escalado
+              // Forzamos que la textura ocupe un tile de 64x64 para más detalle
+              float tileSize = 64.0f;
+              
+              for (float y = 0; y < e.rect.height; y += tileSize) {
+                  for (float x = 0; x < e.rect.width; x += tileSize) {
+                      // Calcular ancho/alto restante
+                      float drawW = (e.rect.width - x < tileSize) ? (e.rect.width - x) : tileSize;
+                      float drawH = (e.rect.height - y < tileSize) ? (e.rect.height - y) : tileSize;
+                      
+                      // Fuente: tomamos toda la textura (o una parte proporcional si drawW < tileSize)
+                      // Si queremos que se corte, ajustamos source.width
+                      // Si queremos que se escale (squash), usamos toda la source.
+                      // Lo mejor para tiles es cortar.
+                      
+                      float sourceW = (drawW / tileSize) * tex.width;
+                      float sourceH = (drawH / tileSize) * tex.height;
+                      
+                      Rectangle source = { 0, 0, sourceW, sourceH };
+                      Rectangle dest = { e.rect.x + x, e.rect.y + y, drawW, drawH };
+                      
+                      DrawTexturePro(tex, source, dest, {0,0}, 0.0f, WHITE);
+                  }
+              }
+              drawn = true;
+          }
+      } else if (e.textureId == 2) { // Pipe
+          Texture2D tex = TextureManager::Instance().Get("pipe");
+          if (tex.id != 0) {
+               DrawTexturePro(tex, {0,0,(float)tex.width,(float)tex.height}, e.rect, {0,0}, 0.0f, WHITE);
+               drawn = true;
+          }
+      }
+
+      if (!drawn) {
+          if (e.blocking)
+            DrawBricksFloor(e.rect);
+          else
+            DrawRectangleRec(e.rect, e.color);
+      }
     }
     DrawGoal(currentLevel.goal);
 
@@ -277,10 +352,12 @@ int main() {
     DrawText(scoreText, 8, 48, 22, (Color){255, 215, 0, 255});
 
     // UI Base
-    DrawText("← →/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu.",
-             12, 10, 18, BLACK);
-    DrawText("← →/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu.",
-             10, 8, 18, RAYWHITE);
+    DrawText(
+        "Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu.",
+        12, 10, 18, BLACK);
+    DrawText(
+        "Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu.",
+        10, 8, 18, RAYWHITE);
 
     // Level indicator during gameplay
     if (state == GameState::PLAYING) {
@@ -380,6 +457,7 @@ int main() {
     EndDrawing();
   }
 
+  TextureManager::Instance().UnloadAll();
   CloseWindow();
   return 0;
 }

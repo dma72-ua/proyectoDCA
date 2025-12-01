@@ -43,4 +43,12 @@ public:
     void  setVy(float v) { speed = v; }
     void  bounce(float v = -300.0f) { speed = v; }
     void  reset(Vector2 p) { position = p; speed = 0.0f; canJump = false; }
+
+    // --- Modeling Support ---
+    Texture2D texture = {0};
+    Rectangle frameRec = {0,0,0,0};
+    int currentFrame = 0;
+    int framesCounter = 0;
+    int framesSpeed = 8;
+    bool isFacingRight = true;
 };
