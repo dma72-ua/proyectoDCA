@@ -34,72 +34,80 @@ void Player::updatePlayer(float delta, std::vector<EnvItem> &envItems) {
     deltaX += PLAYER_MOVE_SPEED * delta;
     isFacingRight = true;
   }
-
   position.x += deltaX;
-
+  
   // Colisión horizontal
   Rectangle playerRect = {position.x, position.y - height, width, height};
   for (auto &envItem : envItems) {
     if (envItem.blocking && CheckCollisionRecs(playerRect, envItem.rect)) {
       if (deltaX > 0) {
-        // Moviendo a la derecha, colocar al jugador justo a la izquierda del obstáculo
         position.x = envItem.rect.x - width;
       } else if (deltaX < 0) {
-        // Moviendo a la izquierda, colocar al jugador justo a la derecha del obstáculo
         position.x = envItem.rect.x + envItem.rect.width;
       }
     }
   }
-
+  
   // Salto
   if ((IsKeyDown(KEY_SPACE) || IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) &&
       canJump) {
     speed = -PLAYER_JUMP_SPEED;
     canJump = false;
   }
-
+  
   // Colisión vertical
   bool hitObstacle = false;
-
+  float nextY = position.y + (speed * delta);
+  
   for (auto &envItem : envItems) {
     if (envItem.blocking &&
         envItem.rect.x <= position.x + width &&
-        envItem.rect.x + envItem.rect.width >= position.x &&
-        envItem.rect.y >= position.y &&
-        envItem.rect.y <= position.y + (speed * delta)) {
-      hitObstacle = true;
-      speed = 0.0f;
-      position.y = envItem.rect.y;
-      break;
+        envItem.rect.x + envItem.rect.width >= position.x) {
+      
+      // Colisión desde arriba (cayendo)
+      if (speed > 0 && 
+          position.y <= envItem.rect.y &&
+          nextY >= envItem.rect.y) {
+        hitObstacle = true;
+        speed = 0.0f;
+        position.y = envItem.rect.y;
+        canJump = true;
+        break;
+      }
+      // Colisión desde abajo (saltando)
+      else if (speed < 0 && 
+               position.y - height >= envItem.rect.y + envItem.rect.height &&
+               nextY - height <= envItem.rect.y + envItem.rect.height) {
+        hitObstacle = true;
+        speed = 0.0f;
+        position.y = envItem.rect.y + envItem.rect.height + height;
+        break;
+      }
     }
   }
-
+  
   if (!hitObstacle) {
     position.y += speed * delta;
     speed += GRAVITY * delta;
     canJump = false;
-  } else
-    canJump = true;
-
+  }
+  
   // Animation Update
   if (texture.id != 0) {
-      // Solo animar si el frameRec es menor que el texture width (hay más de 1 frame)
-      if (frameRec.width < texture.width) {
-          framesCounter++;
-          if (framesCounter >= (60/framesSpeed)) {
-              framesCounter = 0;
-              currentFrame++;
-              // Asumimos 4 frames si animamos
-              if (currentFrame > 3) currentFrame = 0;
-              frameRec.x = (float)currentFrame * frameRec.width;
-          }
-          
-          // Si no se mueve, frame 0
-          if (!IsKeyDown(KEY_LEFT) && !IsKeyDown(KEY_RIGHT) && !IsKeyDown(KEY_A) && !IsKeyDown(KEY_D)) {
-              currentFrame = 0;
-              frameRec.x = 0;
-          }
+    if (frameRec.width < texture.width) {
+      framesCounter++;
+      if (framesCounter >= (60/framesSpeed)) {
+        framesCounter = 0;
+        currentFrame++;
+        if (currentFrame > 3) currentFrame = 0;
+        frameRec.x = (float)currentFrame * frameRec.width;
       }
+      
+      if (!IsKeyDown(KEY_LEFT) && !IsKeyDown(KEY_RIGHT) && !IsKeyDown(KEY_A) && !IsKeyDown(KEY_D)) {
+        currentFrame = 0;
+        frameRec.x = 0;
+      }
+    }
   }
 }
 

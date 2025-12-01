@@ -14,6 +14,46 @@ enum class GameState { START, MENU, PLAYING, VICTORY, DEFEAT, ALL_LEVELS_COMPLET
 // ----------------- Constantes de interacción -----------------
 static constexpr float STOMP_TOLERANCE = 10.0f;
 static constexpr float FALLING_VY_MIN = 120.0f;
+
+// ----------------- Estructura para gestionar audio -----------------
+struct GameAudio {
+  Music backgroundMusic;
+  Sound jumpSound;
+  Sound coinSound;
+  Sound stompSound;
+  Sound hurtSound;
+  Sound victorySound;
+  
+  void Load() {
+    backgroundMusic = LoadMusicStream("assets/music.mp3");
+    jumpSound = LoadSound("assets/jump.mp3");
+    coinSound = LoadSound("assets/coin.mp3mp3");
+    stompSound = LoadSound("assets/stomp.mp3");
+    hurtSound = LoadSound("assets/hurt.mp3");
+    victorySound = LoadSound("assets/victory.mp3");
+    
+    // Ajustar volúmenes (0.0f a 1.0f)
+    SetMusicVolume(backgroundMusic, 0.3f);
+    SetSoundVolume(jumpSound, 0.5f);
+    SetSoundVolume(coinSound, 0.4f);
+    SetSoundVolume(stompSound, 0.5f);
+    SetSoundVolume(hurtSound, 0.6f);
+    SetSoundVolume(victorySound, 0.7f);
+  }
+  
+  void Unload() {
+    UnloadMusicStream(backgroundMusic);
+    UnloadSound(jumpSound);
+    UnloadSound(coinSound);
+    UnloadSound(stompSound);
+    UnloadSound(hurtSound);
+    UnloadSound(victorySound);
+  }
+  
+  void Update() {
+    UpdateMusicStream(backgroundMusic);
+  }
+};
  
 // ----------------- Temas -----------------
 struct Theme {
@@ -57,10 +97,8 @@ static void DrawBricksFloor(const Rectangle &area) {
 
 // ----------------- Dibujo del objetivo (bandera/palo) -----------------
 static void DrawGoal(const Rectangle &goal) {
-  // Palo
   DrawRectangle(goal.x, goal.y - goal.height, 8, goal.height,
                 (Color){180, 180, 180, 255});
-  // Bandera
   DrawRectangle(goal.x + 8, goal.y - goal.height + 12, 28, 18,
                 (Color){255, 85, 85, 255});
   DrawTriangle({goal.x + 36, goal.y - goal.height + 21},
@@ -98,60 +136,50 @@ void UpdateCameraPlayerBoundsPush(Camera2D *camera, Player *player) {
 int main() {
   InitWindow(960, 540, "proyectoDCA");
   SetTargetFPS(60);
+  
+  // Inicializar sistema de audio
+  InitAudioDevice();
+  GameAudio audio;
+  audio.Load();
 
   Font uiFont = GetFontDefault();
-  // Cargar texturas globales
   TextureManager::Instance().Load("player", "assets/player.png");
   TextureManager::Instance().Load("enemy", "assets/enemy.png");
   TextureManager::Instance().Load("bricks", "assets/bricks.png");
   TextureManager::Instance().Load("pipe", "assets/pipe.png");
   TextureManager::Instance().Load("heart", "assets/heart.png");
 
-  // Cámara
   Camera2D camera = {0};
   camera.offset = {480, 350};
   camera.zoom = 0.875f;
 
-  //Monedas
   std::vector<Coin> coins;
   int score = 0;
   int coinsCollected = 0;
   int totalCoinsInLevel = 0;
 
-  // Vidas
   int playerLives = 3;
   const int MAX_LIVES = 3;
-  float invincibilityTimer = 0.0f;  // Timer de invencibilidad
-  const float INVINCIBILITY_DURATION = 2.0f;  // 2 segundos de invencibilidad
+  float invincibilityTimer = 0.0f;
+  const float INVINCIBILITY_DURATION = 2.0f;
 
-  // Level Manager
   LevelManager levelManager;
-
-  // Jugador
   Player player{};
-
-  // Enemigos (vector que se rellenará según el nivel)
   std::vector<Enemy> enemies;
 
-  // Estados
   GameState state = GameState::START;
   int menuSelection = 0;
   int themeSelection = 0;
 
-  // Lambda para cargar el nivel actual
   auto loadCurrentLevel = [&]() {
     const Level &level = levelManager.getCurrentLevel();
-
-    // Reset player
     player.reset(level.playerStart);
 
-    // Create enemies from spawn data
     enemies.clear();
     for (const auto &spawn : level.enemySpawns) {
       enemies.push_back(Enemy(spawn.position, 32, 32, spawn.direction));
     }
 
-    // Create coins from level data
     coins.clear();
     for (const auto &pos : level.coinPositions) {
         coins.push_back(Coin(pos));
@@ -159,20 +187,24 @@ int main() {
     totalCoinsInLevel = coins.size();
     coinsCollected = 0;
     
-    // Reset lives when loading level
     playerLives = MAX_LIVES;
     printf("DEBUG: Nivel cargado. Vidas reseteadas a: %d\n", playerLives);
 
-    // Reset camera
     Rectangle pb = player.bounds();
     camera.target = {pb.x + pb.width * 0.5f, pb.y + pb.height * 0.5f};
   };
 
   loadCurrentLevel();
+  
+  // Iniciar música de fondo
+  PlayMusicStream(audio.backgroundMusic);
 
   while (!WindowShouldClose()) {
     float dt = GetFrameTime();
     const Level &currentLevel = levelManager.getCurrentLevel();
+    
+    // Actualizar música
+    audio.Update();
 
     // --------- INPUT de estado ---------
     if (state == GameState::START) {
@@ -232,30 +264,42 @@ int main() {
 
     // --------- UPDATE (solo durante PLAYING) ---------
     if (state == GameState::PLAYING) {
-      // Actualizar timer de invencibilidad
       if (invincibilityTimer > 0.0f) {
         invincibilityTimer -= dt;
       }
+      
+      // Detectar salto para reproducir sonido
+      bool wasJumping = player.vy() < 0;
       player.UpdatePlayer(currentLevel.envItems, dt);
+      bool isJumping = player.vy() < 0;
+      
+      if (isJumping && !wasJumping) {
+        PlaySound(audio.jumpSound);
+      }
+      
       for (auto &e : enemies)
         e.update(dt, currentLevel.envItems);
 
       Rectangle pb = player.bounds();
-        // Recolección de monedas
-        for (auto &coin : coins) {
-          if (coin.checkCollision(pb)) {
+      
+      // Recolección de monedas
+      for (auto &coin : coins) {
+        if (coin.checkCollision(pb)) {
+          if (!coin.collected) { 
             coin.startCollect(); 
-              coinsCollected++;
-              score += 100;
+            coinsCollected++;
+            score += 100;
+            PlaySound(audio.coinSound);
           }
+        }
       }
-      // Colisión con enemigos (stomp vs derrota)
+      
+      // Colisión con enemigos
       bool diedThisFrame = false;
       for (auto &e : enemies) {
         if (!e.alive)
           continue;
         
-        // Skip collision if player is invincible
         if (invincibilityTimer > 0.0f)
           continue;
           
@@ -274,70 +318,57 @@ int main() {
             player.bounce(-320.0f);
             pb = player.bounds();
             score += 200;
+            PlaySound(audio.stompSound);
           } else {
-            // Perder una vida
             playerLives--;
             printf("DEBUG: Perdiste una vida! Vidas restantes: %d\n", playerLives);
             
-            // Activar invencibilidad
             invincibilityTimer = INVINCIBILITY_DURATION;
+            PlaySound(audio.hurtSound);
             
             if (playerLives <= 0) {
               state = GameState::DEFEAT;
               diedThisFrame = true;
             } else {
-              player.bounce(-200.0f); // Pequeño rebote para feedback visual
+              player.bounce(-200.0f);
             }
             break;
           }
         }
       }
 
-      // Victoria: tocar el objetivo
+      // Victoria
       if (!diedThisFrame) {
         Rectangle goalArea = {currentLevel.goal.x - 6,
                               currentLevel.goal.y - currentLevel.goal.height,
                               40, currentLevel.goal.height};
         if (CheckCollisionRecs(pb, goalArea)) {
           state = GameState::VICTORY;
+          PlaySound(audio.victorySound);
         }
       }
 
-      // Cámara sigue al jugador
-      // camera.target = {pb.x + pb.width * 0.5f, pb.y + pb.height * 0.5f};
       UpdateCameraPlayerBoundsPush(&camera, &player);
     }
 
     // --------- DRAW ---------
     BeginDrawing();
-    // Usar el color del tema seleccionado en lugar del nivel
-    // ClearBackground(currentLevel.skyColor);
     ClearBackground(themes[themeSelection].skyColor);
  
     DrawRetroBackgroundScreen();
 
-    // Mundo
     BeginMode2D(camera);
     for (const auto &e : currentLevel.envItems) {
       bool drawn = false;
-      // Si tiene textureId, intentamos dibujar textura
-      if (e.textureId == 1) { // Bricks
+      if (e.textureId == 1) {
           Texture2D tex = TextureManager::Instance().Get("bricks");
           if (tex.id != 0) {
-              // Manual Tiling con escalado
-              // Forzamos que la textura ocupe un tile de 64x64 para más detalle
               float tileSize = 64.0f;
               
               for (float y = 0; y < e.rect.height; y += tileSize) {
                   for (float x = 0; x < e.rect.width; x += tileSize) {
-                      // Calcular ancho/alto restante
                       float drawW = (e.rect.width - x < tileSize) ? (e.rect.width - x) : tileSize;
                       float drawH = (e.rect.height - y < tileSize) ? (e.rect.height - y) : tileSize;
-                      
-                      // Fuente: tomamos toda la textura (o una parte proporcional si drawW < tileSize)
-                      // Si queremos que se corte, ajustamos source.width
-                      // Si queremos que se escale (squash), usamos toda la source.
-                      // Lo mejor para tiles es cortar.
                       
                       float sourceW = (drawW / tileSize) * tex.width;
                       float sourceH = (drawH / tileSize) * tex.height;
@@ -350,7 +381,7 @@ int main() {
               }
               drawn = true;
           }
-      } else if (e.textureId == 2) { // Pipe
+      } else if (e.textureId == 2) {
           Texture2D tex = TextureManager::Instance().Get("pipe");
           if (tex.id != 0) {
                DrawTexturePro(tex, {0,0,(float)tex.width,(float)tex.height}, e.rect, {0,0}, 0.0f, WHITE);
@@ -367,26 +398,22 @@ int main() {
     }
     DrawGoal(currentLevel.goal);
 
-    // Entidades
-    // Draw player with blink effect if invincible
     if (invincibilityTimer <= 0.0f || fmod(invincibilityTimer * 10.0f, 1.0f) > 0.5f) {
       player.Draw();
     }
     for (const auto &en : enemies)
       en.draw();
     
-    // Monedas
     for (const auto &coin : coins) coin.draw();
 
     EndMode2D();
 
     // UI - Mostrar puntuación
     const char* scoreText = TextFormat("Monedas: %d/%d  Puntos: %d", coinsCollected, totalCoinsInLevel, score);
-
     DrawText(scoreText, 10, 50, 22, BLACK);
     DrawText(scoreText, 8, 48, 22, (Color){255, 215, 0, 255});
 
-    // Dibujar corazones (vidas)
+    // Dibujar corazones
     Texture2D heartTex = TextureManager::Instance().Get("heart");
     if (heartTex.id != 0) {
       int heartSize = 30;
@@ -396,13 +423,11 @@ int main() {
       
       for (int i = 0; i < MAX_LIVES; i++) {
         if (i < playerLives) {
-          // Dibujar corazón lleno
           DrawTexturePro(heartTex, 
             {0, 0, (float)heartTex.width, (float)heartTex.height},
             {(float)(startX + i * heartSpacing), (float)startY, (float)heartSize, (float)heartSize},
             {0, 0}, 0.0f, WHITE);
         } else {
-          // Dibujar corazón vacío (con transparencia)
           DrawTexturePro(heartTex, 
             {0, 0, (float)heartTex.width, (float)heartTex.height},
             {(float)(startX + i * heartSpacing), (float)startY, (float)heartSize, (float)heartSize},
@@ -411,7 +436,6 @@ int main() {
       }
     }
 
-    // UI Base
     DrawText(
         "Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu.",
         12, 10, 18, BLACK);
@@ -419,7 +443,6 @@ int main() {
         "Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu.",
         10, 8, 18, RAYWHITE);
 
-    // Level indicator during gameplay
     if (state == GameState::PLAYING) {
       const char *levelText =
           TextFormat("Nivel %d/%d", levelManager.getCurrentLevelNumber(),
@@ -465,7 +488,6 @@ int main() {
         DrawText(name.c_str(), 230, startY + i * spacing, 24, c);
       }
  
-      // Dibujar selector de tema
       int themeY = startY + levelManager.getTotalLevels() * spacing + 40;
       DrawText("TEMA (Izquierda/Derecha):", 200, themeY, 20, RAYWHITE);
       const char *themeName = themes[themeSelection].name;
@@ -517,6 +539,10 @@ int main() {
     EndDrawing();
   }
 
+  // Limpiar audio
+  audio.Unload();
+  CloseAudioDevice();
+  
   TextureManager::Instance().UnloadAll();
   CloseWindow();
   return 0;
