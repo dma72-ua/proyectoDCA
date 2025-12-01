@@ -2,6 +2,7 @@
 #include "envItem.h"
 #include "levelManager.h"
 #include "player.h"
+#include "textureManager.h"
 #include <vector>
 
 // ----------------- Estados de juego -----------------
@@ -68,6 +69,12 @@ static void DrawGoal(const Rectangle &goal) {
 int main() {
   InitWindow(960, 540, "proyectoDCA");
   SetTargetFPS(60);
+
+  // Cargar texturas globales
+  TextureManager::Instance().Load("player", "assets/player.png");
+  TextureManager::Instance().Load("enemy", "assets/enemy.png");
+  TextureManager::Instance().Load("bricks", "assets/bricks.png");
+  TextureManager::Instance().Load("pipe", "assets/pipe.png");
 
   // Cámara
   Camera2D camera = {0};
@@ -228,10 +235,51 @@ int main() {
     // Mundo
     BeginMode2D(camera);
     for (const auto &e : currentLevel.envItems) {
-      if (e.blocking)
-        DrawBricksFloor(e.rect);
-      else
-        DrawRectangleRec(e.rect, e.color);
+      bool drawn = false;
+      // Si tiene textureId, intentamos dibujar textura
+      if (e.textureId == 1) { // Bricks
+          Texture2D tex = TextureManager::Instance().Get("bricks");
+          if (tex.id != 0) {
+              // Manual Tiling con escalado
+              // Forzamos que la textura ocupe un tile de 64x64 para más detalle
+              float tileSize = 64.0f;
+              
+              for (float y = 0; y < e.rect.height; y += tileSize) {
+                  for (float x = 0; x < e.rect.width; x += tileSize) {
+                      // Calcular ancho/alto restante
+                      float drawW = (e.rect.width - x < tileSize) ? (e.rect.width - x) : tileSize;
+                      float drawH = (e.rect.height - y < tileSize) ? (e.rect.height - y) : tileSize;
+                      
+                      // Fuente: tomamos toda la textura (o una parte proporcional si drawW < tileSize)
+                      // Si queremos que se corte, ajustamos source.width
+                      // Si queremos que se escale (squash), usamos toda la source.
+                      // Lo mejor para tiles es cortar.
+                      
+                      float sourceW = (drawW / tileSize) * tex.width;
+                      float sourceH = (drawH / tileSize) * tex.height;
+                      
+                      Rectangle source = { 0, 0, sourceW, sourceH };
+                      Rectangle dest = { e.rect.x + x, e.rect.y + y, drawW, drawH };
+                      
+                      DrawTexturePro(tex, source, dest, {0,0}, 0.0f, WHITE);
+                  }
+              }
+              drawn = true;
+          }
+      } else if (e.textureId == 2) { // Pipe
+          Texture2D tex = TextureManager::Instance().Get("pipe");
+          if (tex.id != 0) {
+               DrawTexturePro(tex, {0,0,(float)tex.width,(float)tex.height}, e.rect, {0,0}, 0.0f, WHITE);
+               drawn = true;
+          }
+      }
+
+      if (!drawn) {
+          if (e.blocking)
+            DrawBricksFloor(e.rect);
+          else
+            DrawRectangleRec(e.rect, e.color);
+      }
     }
     DrawGoal(currentLevel.goal);
 
@@ -346,6 +394,7 @@ int main() {
     EndDrawing();
   }
 
+  TextureManager::Instance().UnloadAll();
   CloseWindow();
   return 0;
 }

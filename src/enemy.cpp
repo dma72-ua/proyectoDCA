@@ -1,4 +1,5 @@
 #include "enemy.h"
+#include "textureManager.h"
 
 static constexpr float GRAVITY_E   = 900.0f;  // px/s^2
 static constexpr float ENEMY_SPEED = 80.0f;   // px/s
@@ -9,6 +10,15 @@ Enemy::Enemy(Vector2 pos, float w, float h, int dirSign) {
     dir  = (dirSign >= 0) ? +1 : -1;
     alive = true;
     spawnPos = pos;
+
+    // Intentar cargar textura
+    this->texture = TextureManager::Instance().Get("enemy");
+    if (this->texture.id != 0) {
+        bool isStrip = (this->texture.width > this->texture.height * 2);
+        int numFrames = isStrip ? 4 : 1;
+        float frameWidth = (float)this->texture.width / (float)numFrames;
+        this->frameRec = { 0.0f, 0.0f, frameWidth, (float)this->texture.height };
+    }
 }
 
 void Enemy::kill() { alive = false; }
@@ -51,19 +61,49 @@ void Enemy::update(float dt, const std::vector<EnvItem>& envItems) {
             vel.x = dir * ENEMY_SPEED;
         }
     }
+
+    // Animation Update
+    if (texture.id != 0) {
+        if (frameRec.width < texture.width) {
+            framesCounter++;
+            if (framesCounter >= (60/framesSpeed)) {
+                framesCounter = 0;
+                currentFrame++;
+                if (currentFrame > 3) currentFrame = 0;
+                frameRec.x = (float)currentFrame * frameRec.width;
+            }
+        }
+    }
 }
 
 void Enemy::draw() const {
     if (!alive) return;
-    // cuerpo
-    DrawRectangleRec(rect, (Color){168,94,45,255});
-    // sombreado
-    DrawRectangle(rect.x, rect.y + rect.height - 6, rect.width, 6, (Color){110,58,28,255});
-    // ojos
-    float eyeW = rect.width*0.18f, eyeH = rect.height*0.28f;
-    Rectangle eyeL = { rect.x + rect.width*0.28f - eyeW*0.5f, rect.y + rect.height*0.25f, eyeW, eyeH };
-    Rectangle eyeR = { rect.x + rect.width*0.72f - eyeW*0.5f, rect.y + rect.height*0.25f, eyeW, eyeH };
-    DrawRectangleRec(eyeL, RAYWHITE); DrawRectangleRec(eyeR, RAYWHITE);
-    DrawRectangle(eyeL.x + eyeW*0.35f, eyeL.y + eyeH*0.45f, eyeW*0.30f, eyeH*0.40f, BLACK);
-    DrawRectangle(eyeR.x + eyeW*0.35f, eyeR.y + eyeH*0.45f, eyeW*0.30f, eyeH*0.40f, BLACK);
+
+    // Hack para usar TextureManager en método const (o mutable en header)
+    // O simplemente asumimos que ya se cargó en constructor.
+    // Si queremos reintentar carga, necesitamos quitar const o usar const_cast, 
+    // pero por simplicidad usaremos la textura si está cargada.
+    
+    if (texture.id != 0) {
+        Rectangle destRec = { rect.x, rect.y, rect.width, rect.height };
+        Rectangle source = frameRec;
+        // Si va a la izquierda, invertimos (dependiendo de cómo sea el sprite original)
+        // Asumamos sprite mira derecha
+        if (dir == -1) source.width = -source.width;
+
+        DrawTexturePro(texture, source, destRec, {0,0}, 0.0f, WHITE);
+    } else {
+        // Fallback
+        // cuerpo
+        DrawRectangleRec(rect, (Color){168,94,45,255});
+        // sombreado
+        DrawRectangle(rect.x, rect.y + rect.height - 6, rect.width, 6, (Color){110,58,28,255});
+        // ojos
+        float eyeW = rect.width*0.18f, eyeH = rect.height*0.28f;
+        Rectangle eyeL = { rect.x + rect.width*0.28f - eyeW*0.5f, rect.y + rect.height*0.25f, eyeW, eyeH };
+        Rectangle eyeR = { rect.x + rect.width*0.72f - eyeW*0.5f, rect.y + rect.height*0.25f, eyeW, eyeH };
+        DrawRectangleRec(eyeL, RAYWHITE); DrawRectangleRec(eyeR, RAYWHITE);
+        DrawRectangle(eyeL.x + eyeW*0.35f, eyeL.y + eyeH*0.45f, eyeW*0.30f, eyeH*0.40f, BLACK);
+        DrawRectangle(eyeR.x + eyeW*0.35f, eyeR.y + eyeH*0.45f, eyeW*0.30f, eyeH*0.40f, BLACK);
+    }
 }
