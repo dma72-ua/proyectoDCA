@@ -1,26 +1,32 @@
+#include "coin.h"
 #include "enemy.h"
 #include "envItem.h"
 #include "levelManager.h"
 #include "player.h"
-#include <thread>
 #include "textureManager.h"
-#include <vector>
-#include "coin.h"
 #include <cmath>
+#include <vector>
 
 // ----------------- Estados de juego -----------------
-enum class GameState { START, MENU, PLAYING, VICTORY, DEFEAT, ALL_LEVELS_COMPLETE };
+enum class GameState {
+  START,
+  MENU,
+  PLAYING,
+  VICTORY,
+  DEFEAT,
+  ALL_LEVELS_COMPLETE
+};
 
 // ----------------- Constantes de interacción -----------------
 static constexpr float STOMP_TOLERANCE = 10.0f;
 static constexpr float FALLING_VY_MIN = 120.0f;
- 
+
 // ----------------- Temas -----------------
 struct Theme {
   const char *name;
   Color skyColor;
 };
- 
+
 static const std::vector<Theme> themes = {
     {"DIA", (Color){138, 197, 255, 255}},
     {"NOCHE", (Color){20, 24, 82, 255}},
@@ -112,7 +118,7 @@ int main() {
   camera.offset = {480, 350};
   camera.zoom = 0.875f;
 
-  //Monedas
+  // Monedas
   std::vector<Coin> coins;
   int score = 0;
   int coinsCollected = 0;
@@ -121,8 +127,8 @@ int main() {
   // Vidas
   int playerLives = 3;
   const int MAX_LIVES = 3;
-  float invincibilityTimer = 0.0f;  // Timer de invencibilidad
-  const float INVINCIBILITY_DURATION = 2.0f;  // 2 segundos de invencibilidad
+  float invincibilityTimer = 0.0f;           // Timer de invencibilidad
+  const float INVINCIBILITY_DURATION = 2.0f; // 2 segundos de invencibilidad
 
   // Level Manager
   LevelManager levelManager;
@@ -154,11 +160,11 @@ int main() {
     // Create coins from level data
     coins.clear();
     for (const auto &pos : level.coinPositions) {
-        coins.push_back(Coin(pos));
+      coins.push_back(Coin(pos));
     }
     totalCoinsInLevel = coins.size();
     coinsCollected = 0;
-    
+
     // Reset lives when loading level
     playerLives = MAX_LIVES;
     printf("DEBUG: Nivel cargado. Vidas reseteadas a: %d\n", playerLives);
@@ -241,24 +247,24 @@ int main() {
         e.update(dt, currentLevel.envItems);
 
       Rectangle pb = player.bounds();
-        // Recolección de monedas
-        for (auto &coin : coins) {
-          if (coin.checkCollision(pb)) {
-            coin.startCollect(); 
-              coinsCollected++;
-              score += 100;
-          }
+      // Recolección de monedas
+      for (auto &coin : coins) {
+        if (coin.checkCollision(pb)) {
+          coin.startCollect();
+          coinsCollected++;
+          score += 100;
+        }
       }
       // Colisión con enemigos (stomp vs derrota)
       bool diedThisFrame = false;
       for (auto &e : enemies) {
         if (!e.alive)
           continue;
-        
+
         // Skip collision if player is invincible
         if (invincibilityTimer > 0.0f)
           continue;
-          
+
         Rectangle eb = e.bounds();
         if (CheckCollisionRecs(pb, eb)) {
           float pbBottom = pb.y + pb.height;
@@ -277,11 +283,12 @@ int main() {
           } else {
             // Perder una vida
             playerLives--;
-            printf("DEBUG: Perdiste una vida! Vidas restantes: %d\n", playerLives);
-            
+            printf("DEBUG: Perdiste una vida! Vidas restantes: %d\n",
+                   playerLives);
+
             // Activar invencibilidad
             invincibilityTimer = INVINCIBILITY_DURATION;
-            
+
             if (playerLives <= 0) {
               state = GameState::DEFEAT;
               diedThisFrame = true;
@@ -313,7 +320,7 @@ int main() {
     // Usar el color del tema seleccionado en lugar del nivel
     // ClearBackground(currentLevel.skyColor);
     ClearBackground(themes[themeSelection].skyColor);
- 
+
     DrawRetroBackgroundScreen();
 
     // Mundo
@@ -322,66 +329,72 @@ int main() {
       bool drawn = false;
       // Si tiene textureId, intentamos dibujar textura
       if (e.textureId == 1) { // Bricks
-          Texture2D tex = TextureManager::Instance().Get("bricks");
-          if (tex.id != 0) {
-              // Manual Tiling con escalado
-              // Forzamos que la textura ocupe un tile de 64x64 para más detalle
-              float tileSize = 64.0f;
-              
-              for (float y = 0; y < e.rect.height; y += tileSize) {
-                  for (float x = 0; x < e.rect.width; x += tileSize) {
-                      // Calcular ancho/alto restante
-                      float drawW = (e.rect.width - x < tileSize) ? (e.rect.width - x) : tileSize;
-                      float drawH = (e.rect.height - y < tileSize) ? (e.rect.height - y) : tileSize;
-                      
-                      // Fuente: tomamos toda la textura (o una parte proporcional si drawW < tileSize)
-                      // Si queremos que se corte, ajustamos source.width
-                      // Si queremos que se escale (squash), usamos toda la source.
-                      // Lo mejor para tiles es cortar.
-                      
-                      float sourceW = (drawW / tileSize) * tex.width;
-                      float sourceH = (drawH / tileSize) * tex.height;
-                      
-                      Rectangle source = { 0, 0, sourceW, sourceH };
-                      Rectangle dest = { e.rect.x + x, e.rect.y + y, drawW, drawH };
-                      
-                      DrawTexturePro(tex, source, dest, {0,0}, 0.0f, WHITE);
-                  }
-              }
-              drawn = true;
+        Texture2D tex = TextureManager::Instance().Get("bricks");
+        if (tex.id != 0) {
+          // Manual Tiling con escalado
+          // Forzamos que la textura ocupe un tile de 64x64 para más detalle
+          float tileSize = 64.0f;
+
+          for (float y = 0; y < e.rect.height; y += tileSize) {
+            for (float x = 0; x < e.rect.width; x += tileSize) {
+              // Calcular ancho/alto restante
+              float drawW =
+                  (e.rect.width - x < tileSize) ? (e.rect.width - x) : tileSize;
+              float drawH = (e.rect.height - y < tileSize) ? (e.rect.height - y)
+                                                           : tileSize;
+
+              // Fuente: tomamos toda la textura (o una parte proporcional si
+              // drawW < tileSize) Si queremos que se corte, ajustamos
+              // source.width Si queremos que se escale (squash), usamos toda la
+              // source. Lo mejor para tiles es cortar.
+
+              float sourceW = (drawW / tileSize) * tex.width;
+              float sourceH = (drawH / tileSize) * tex.height;
+
+              Rectangle source = {0, 0, sourceW, sourceH};
+              Rectangle dest = {e.rect.x + x, e.rect.y + y, drawW, drawH};
+
+              DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
+            }
           }
+          drawn = true;
+        }
       } else if (e.textureId == 2) { // Pipe
-          Texture2D tex = TextureManager::Instance().Get("pipe");
-          if (tex.id != 0) {
-               DrawTexturePro(tex, {0,0,(float)tex.width,(float)tex.height}, e.rect, {0,0}, 0.0f, WHITE);
-               drawn = true;
-          }
+        Texture2D tex = TextureManager::Instance().Get("pipe");
+        if (tex.id != 0) {
+          DrawTexturePro(tex, {0, 0, (float)tex.width, (float)tex.height},
+                         e.rect, {0, 0}, 0.0f, WHITE);
+          drawn = true;
+        }
       }
 
       if (!drawn) {
-          if (e.blocking)
-            DrawBricksFloor(e.rect);
-          else
-            DrawRectangleRec(e.rect, e.color);
+        if (e.blocking)
+          DrawBricksFloor(e.rect);
+        else
+          DrawRectangleRec(e.rect, e.color);
       }
     }
     DrawGoal(currentLevel.goal);
 
     // Entidades
     // Draw player with blink effect if invincible
-    if (invincibilityTimer <= 0.0f || fmod(invincibilityTimer * 10.0f, 1.0f) > 0.5f) {
+    if (invincibilityTimer <= 0.0f ||
+        fmod(invincibilityTimer * 10.0f, 1.0f) > 0.5f) {
       player.Draw();
     }
     for (const auto &en : enemies)
       en.draw();
-    
+
     // Monedas
-    for (const auto &coin : coins) coin.draw();
+    for (const auto &coin : coins)
+      coin.draw();
 
     EndMode2D();
 
     // UI - Mostrar puntuación
-    const char* scoreText = TextFormat("Monedas: %d/%d  Puntos: %d", coinsCollected, totalCoinsInLevel, score);
+    const char *scoreText = TextFormat(
+        "Monedas: %d/%d  Puntos: %d", coinsCollected, totalCoinsInLevel, score);
 
     DrawText(scoreText, 10, 50, 22, BLACK);
     DrawText(scoreText, 8, 48, 22, (Color){255, 215, 0, 255});
@@ -393,20 +406,22 @@ int main() {
       int heartSpacing = 35;
       int startX = GetScreenWidth() - (MAX_LIVES * heartSpacing) - 10;
       int startY = 50;
-      
+
       for (int i = 0; i < MAX_LIVES; i++) {
         if (i < playerLives) {
           // Dibujar corazón lleno
-          DrawTexturePro(heartTex, 
-            {0, 0, (float)heartTex.width, (float)heartTex.height},
-            {(float)(startX + i * heartSpacing), (float)startY, (float)heartSize, (float)heartSize},
-            {0, 0}, 0.0f, WHITE);
+          DrawTexturePro(heartTex,
+                         {0, 0, (float)heartTex.width, (float)heartTex.height},
+                         {(float)(startX + i * heartSpacing), (float)startY,
+                          (float)heartSize, (float)heartSize},
+                         {0, 0}, 0.0f, WHITE);
         } else {
           // Dibujar corazón vacío (con transparencia)
-          DrawTexturePro(heartTex, 
-            {0, 0, (float)heartTex.width, (float)heartTex.height},
-            {(float)(startX + i * heartSpacing), (float)startY, (float)heartSize, (float)heartSize},
-            {0, 0}, 0.0f, (Color){255, 255, 255, 80});
+          DrawTexturePro(heartTex,
+                         {0, 0, (float)heartTex.width, (float)heartTex.height},
+                         {(float)(startX + i * heartSpacing), (float)startY,
+                          (float)heartSize, (float)heartSize},
+                         {0, 0}, 0.0f, (Color){255, 255, 255, 80});
         }
       }
     }
@@ -464,7 +479,7 @@ int main() {
         }
         DrawText(name.c_str(), 230, startY + i * spacing, 24, c);
       }
- 
+
       // Dibujar selector de tema
       int themeY = startY + levelManager.getTotalLevels() * spacing + 40;
       DrawText("TEMA (Izquierda/Derecha):", 200, themeY, 20, RAYWHITE);
