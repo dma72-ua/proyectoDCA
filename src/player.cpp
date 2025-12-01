@@ -41,7 +41,8 @@ void Player::updatePlayer(float delta, std::vector<EnvItem> &envItems) {
   bool hitObstacle = false;
 
   for (auto &envItem : envItems) {
-    if (envItem.blocking && envItem.rect.x <= position.x &&
+    if (envItem.blocking &&
+        envItem.rect.x <= position.x + width &&
         envItem.rect.x + envItem.rect.width >= position.x &&
         envItem.rect.y >= position.y &&
         envItem.rect.y <= position.y + (speed * delta)) {

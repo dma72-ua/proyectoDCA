@@ -17,7 +17,7 @@ void LevelManager::initializeLevels() {
   // LEVEL 1 - Tutorial/Easy
   levels.push_back({
       "Nivel 1 - Primeros Pasos",
-      {60, 440},           // playerStart
+      {60, 300},           // playerStart
       {1700, 440, 8, 160}, // goal
       {
           // envItems
@@ -39,7 +39,7 @@ void LevelManager::initializeLevels() {
   // LEVEL 2 - Intermediate
   levels.push_back({
       "Nivel 2 - El Desafío",
-      {60, 440},           // playerStart
+      {60, 300},           // playerStart
       {2200, 440, 8, 160}, // goal
       {
           // envItems
@@ -68,7 +68,7 @@ void LevelManager::initializeLevels() {
   // LEVEL 3 - Advanced
   levels.push_back({
       "Nivel 3 - Maestría",
-      {60, 440},           // playerStart
+      {60, 300},           // playerStart
       {2800, 440, 8, 160}, // goal
       {
           // envItems
