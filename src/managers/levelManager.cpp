@@ -43,6 +43,11 @@ void LevelManager::initializeLevels() {
         {1120, 320},  // Antes del primer tubo
         {1350, 360},  // Entre enemigos
         {1500, 360},  // Camino al objetivo
+      },
+
+      // ESTRELLAS NIVEL 1 - Pocas y en lugares estratégicos
+      {
+        {600, 180},   // En alto, requiere salto desde tercera plataforma
       }
   });
 
@@ -84,6 +89,12 @@ void LevelManager::initializeLevels() {
         {1480, 320},  // Sobre el primer tubo
         {1750, 280},  // Plataforma final
         {1920, 320},  // Último tubo antes de la meta
+      },
+
+      // ESTRELLAS NIVEL 2
+      {
+        {420, 200},   // Sobre plataforma alta, requiere precisión
+        {1480, 280},  // Sobre primer tubo, zona peligrosa
       }
   });
 
@@ -144,6 +155,12 @@ void LevelManager::initializeLevels() {
         {2060, 300},  // Inicio del final
         {2250, 240},  // Plataforma alta final
         {2460, 300},  // Antes de la meta
+      },
+
+      // ESTRELLAS NIVEL 3 - Nivel difícil merece 2 estrellas
+      {
+        {780, 140},   // Muy alto, plataforma pequeña difícil
+        {1700, 220},  // Plataforma alta entre tubos
       }
   });
 }

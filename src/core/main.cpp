@@ -6,6 +6,7 @@
 #include "core/textureManager.h"
 #include <vector>
 #include "entities/coin.h"
+#include "entities/star.h"
 #include <cmath>
 
 // ----------------- Estados de juego -----------------
@@ -148,12 +149,14 @@ int main() {
   TextureManager::Instance().Load("bricks", "assets/bricks.png");
   TextureManager::Instance().Load("pipe", "assets/pipe.png");
   TextureManager::Instance().Load("heart", "assets/heart.png");
+  TextureManager::Instance().Load("star", "assets/star.png");
 
   Camera2D camera = {0};
   camera.offset = {480, 350};
   camera.zoom = 0.875f;
 
   std::vector<Coin> coins;
+  std::vector<Star> stars;
   int score = 0;
   int coinsCollected = 0;
   int totalCoinsInLevel = 0;
@@ -186,6 +189,11 @@ int main() {
     }
     totalCoinsInLevel = coins.size();
     coinsCollected = 0;
+    
+    stars.clear();
+    for (const auto &pos : level.starPositions) {
+        stars.push_back(Star(pos));
+    }
     
     playerLives = MAX_LIVES;
     printf("DEBUG: Nivel cargado. Vidas reseteadas a: %d\n", playerLives);
@@ -290,6 +298,27 @@ int main() {
             coinsCollected++;
             score += 100;
             PlaySound(audio.coinSound);
+          }
+        }
+      }
+      
+      // Recolección de estrellas
+      for (auto &star : stars) {
+        if (star.checkCollision(pb)) {
+          if (!star.collected) {
+            star.startCollect();
+            
+            if (playerLives < MAX_LIVES) {
+              // Restaurar una vida
+              playerLives++;
+              printf("DEBUG: ¡Estrella! Vida restaurada. Vidas: %d\n", playerLives);
+              PlaySound(audio.coinSound); // Usar sonido de moneda o crear uno nuevo
+            } else {
+              // Dar puntos de bonificación
+              score += 500;
+              printf("DEBUG: ¡Estrella! Bonus de 500 puntos. Total: %d\n", score);
+              PlaySound(audio.coinSound);
+            }
           }
         }
       }
@@ -405,6 +434,7 @@ int main() {
       en.draw();
     
     for (const auto &coin : coins) coin.draw();
+    for (const auto &star : stars) star.draw();
 
     EndMode2D();
 
