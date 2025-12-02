@@ -17,6 +17,7 @@ struct Level {
   std::vector<EnemySpawn> enemySpawns;
   Color skyColor;
   std::vector<Vector2> coinPositions;
+  std::vector<Vector2> starPositions;
 };
 
 class LevelManager {
