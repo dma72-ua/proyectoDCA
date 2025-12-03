@@ -51,4 +51,20 @@ public:
     int framesCounter = 0;
     int framesSpeed = 8;
     bool isFacingRight = true;
+private:
+    float frameTime = 0.0f;
+    float frameSpeed = 10.0f; // Frames por segundo
+    int totalFrames = 1;
+    
+    enum AnimState {
+        IDLE,
+        RUNNING,
+        JUMPING,
+        FALLING
+    };
+    AnimState currentAnim = IDLE;
+    AnimState previousAnim = IDLE;
+    
+    void updateAnimation(float deltaTime);
+    float lastHorizontalSpeed = 0.0f; // Para detectar movimiento horizontal
 };
