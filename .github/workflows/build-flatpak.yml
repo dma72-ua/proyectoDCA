@@ -5,6 +5,9 @@ on:
     types: [created, published]
   workflow_dispatch:  # Permite ejecutar manualmente desde la pestaña Actions
 
+permissions:
+  contents: write  # Necesario para subir archivos al release
+
 jobs:
   build-flatpak:
     runs-on: ubuntu-latest
