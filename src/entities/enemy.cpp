@@ -1,4 +1,4 @@
-#include "enemy.h"
+﻿#include "enemy.h"
 #include "../core/textureManager.h"
 
 static constexpr float GRAVITY_E   = 900.0f;  // px/s^2
@@ -95,9 +95,10 @@ void Enemy::draw() const {
     } else {
         // Fallback
         // cuerpo
-        DrawRectangleRec(rect, (Color){168,94,45,255});
+        Color c = { 168, 94, 45, 255 };
+        DrawRectangleRec(rect, c);
         // sombreado
-        DrawRectangle(rect.x, rect.y + rect.height - 6, rect.width, 6, (Color){110,58,28,255});
+        DrawRectangle(rect.x, rect.y + rect.height - 6, rect.width, 6, Color{110,58,28,255});
         // ojos
         float eyeW = rect.width*0.18f, eyeH = rect.height*0.28f;
         Rectangle eyeL = { rect.x + rect.width*0.28f - eyeW*0.5f, rect.y + rect.height*0.25f, eyeW, eyeH };

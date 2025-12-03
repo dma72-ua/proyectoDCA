@@ -1,4 +1,4 @@
-#include "star.h"
+﻿#include "star.h"
 #include "../core/textureManager.h"
 #include <cmath>
 
@@ -42,7 +42,7 @@ void Star::draw() const {
                 destRec, 
                 {0, 0}, 
                 0.0f, 
-                (Color){255, 255, 255, alpha});
+                Color{255, 255, 255, alpha});
         } else {
             // Fallback to procedural drawing
             float t = GetTime();
@@ -91,7 +91,7 @@ void Star::draw() const {
             // Add highlight
             float highlightSize = radius * 0.2f;
             DrawCircle(center.x - radius * 0.2f, center.y - radius * 0.2f, 
-                       highlightSize, (Color){255, 255, 220, 150});
+                       highlightSize, Color{255, 255, 220, 150});
         }
                    
     } else {
@@ -115,7 +115,7 @@ void Star::draw() const {
                     destRec, 
                     {0, 0}, 
                     0.0f, 
-                    (Color){255, 255, 255, alpha});
+                    Color{255, 255, 255, alpha});
             } else {
                 // Procedural collection animation
                 float radius = baseRadius * scale;
@@ -141,8 +141,8 @@ void Star::draw() const {
                         center.y + radius * sinf(nextOuterAngle)
                     };
                     
-                    DrawTriangle(center, outerPoint, innerPoint, (Color){255, 215, 0, alpha});
-                    DrawTriangle(center, innerPoint, nextOuterPoint, (Color){255, 215, 0, alpha});
+                    DrawTriangle(center, outerPoint, innerPoint, Color{255, 215, 0, alpha});
+                    DrawTriangle(center, innerPoint, nextOuterPoint, Color{255, 215, 0, alpha});
                 }
             }
         }

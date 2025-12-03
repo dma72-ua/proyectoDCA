@@ -1,4 +1,4 @@
-#include "entities/enemy.h"
+﻿#include "entities/enemy.h"
 #include "managers/envItem.h"
 #include "managers/levelManager.h"
 #include "entities/player.h"
@@ -63,9 +63,9 @@ struct Theme {
 };
  
 static const std::vector<Theme> themes = {
-    {"DIA", (Color){138, 197, 255, 255}},
-    {"NOCHE", (Color){20, 24, 82, 255}},
-    {"ATARDECER", (Color){255, 145, 77, 255}}};
+    {"DIA", Color{138, 197, 255, 255}},
+    {"NOCHE", Color{20, 24, 82, 255}},
+    {"ATARDECER", Color{255, 145, 77, 255}}};
 
 // ----------------- Fondo retro (screen space) -----------------
 static void DrawRetroBackgroundScreen() {
@@ -78,8 +78,8 @@ static void DrawRetroBackgroundScreen() {
   cloud(120, 60, 120);
   cloud(420, 90, 100);
   cloud(780, 50, 130);
-  DrawCircle(220, 360, 100, (Color){124, 197, 118, 255});
-  DrawCircle(300, 380, 60, (Color){124, 197, 118, 255});
+  DrawCircle(220, 360, 100, Color{124, 197, 118, 255});
+  DrawCircle(300, 380, 60, Color{124, 197, 118, 255});
 }
 
 // ----------------- Suelo/Plataformas ladrillo -----------------
@@ -88,10 +88,10 @@ static void DrawBricksFloor(const Rectangle &area) {
   for (int y = (int)area.y; y < (int)(area.y + area.height); y += tile) {
     for (int x = (int)area.x; x < (int)(area.x + area.width); x += tile) {
       Color c = (((x / tile) + (y / tile)) % 2 == 0)
-                    ? (Color){191, 111, 60, 255}
-                    : (Color){173, 99, 52, 255};
+                    ? Color{191, 111, 60, 255}
+                    : Color{173, 99, 52, 255};
       DrawRectangle(x, y, tile, tile, c);
-      DrawRectangleLines(x, y, tile, tile, (Color){110, 58, 28, 255});
+      DrawRectangleLines(x, y, tile, tile, Color{110, 58, 28, 255});
     }
   }
 }
@@ -99,13 +99,13 @@ static void DrawBricksFloor(const Rectangle &area) {
 // ----------------- Dibujo del objetivo (bandera/palo) -----------------
 static void DrawGoal(const Rectangle &goal) {
   DrawRectangle(goal.x, goal.y - goal.height, 8, goal.height,
-                (Color){180, 180, 180, 255});
+                Color{180, 180, 180, 255});
   DrawRectangle(goal.x + 8, goal.y - goal.height + 12, 28, 18,
-                (Color){255, 85, 85, 255});
+                Color{255, 85, 85, 255});
   DrawTriangle({goal.x + 36, goal.y - goal.height + 21},
                {goal.x + 8 + 28, goal.y - goal.height + 12},
                {goal.x + 8 + 28, goal.y - goal.height + 12 + 18},
-               (Color){220, 40, 40, 255});
+               Color{220, 40, 40, 255});
 }
 
 void UpdateCameraPlayerBoundsPush(Camera2D *camera, Player *player) {
@@ -116,13 +116,13 @@ void UpdateCameraPlayerBoundsPush(Camera2D *camera, Player *player) {
   float height = GetScreenHeight();
 
   Vector2 bboxWorldMin = GetScreenToWorld2D(
-      (Vector2){(1 - bbox.x) * 0.5f * width, (1 - bbox.y) * 0.5f * height},
+      Vector2{(1 - bbox.x) * 0.5f * width, (1 - bbox.y) * 0.5f * height},
       *camera);
   Vector2 bboxWorldMax = GetScreenToWorld2D(
-      (Vector2){(1 + bbox.x) * 0.5f * width, (1 + bbox.y) * 0.5f * height},
+      Vector2{(1 + bbox.x) * 0.5f * width, (1 + bbox.y) * 0.5f * height},
       *camera);
   camera->offset =
-      (Vector2){(1 - bbox.x) * 0.5f * width, (1 - bbox.y) * 0.5f * height};
+      Vector2{(1 - bbox.x) * 0.5f * width, (1 - bbox.y) * 0.5f * height};
 
   if (player->position.x < bboxWorldMin.x)
     camera->target.x = player->position.x;
@@ -442,7 +442,7 @@ int main() {
     // UI - Mostrar puntuación
     const char* scoreText = TextFormat("Monedas: %d/%d  Puntos: %d", coinsCollected, totalCoinsInLevel, score);
     DrawText(scoreText, 10, 50, 22, BLACK);
-    DrawText(scoreText, 8, 48, 22, (Color){255, 215, 0, 255});
+    DrawText(scoreText, 8, 48, 22, Color{255, 215, 0, 255});
 
     // Dibujar corazones
     Texture2D heartTex = TextureManager::Instance().Get("heart");
@@ -462,7 +462,7 @@ int main() {
           DrawTexturePro(heartTex, 
             {0, 0, (float)heartTex.width, (float)heartTex.height},
             {(float)(startX + i * heartSpacing), (float)startY, (float)heartSize, (float)heartSize},
-            {0, 0}, 0.0f, (Color){255, 255, 255, 80});
+            {0, 0}, 0.0f, Color{255, 255, 255, 80});
         }
       }
     }
@@ -485,7 +485,7 @@ int main() {
     // Overlays por estado
     if (state == GameState::START) {
       DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
-                    (Color){0, 0, 0, 120});
+                    Color{0, 0, 0, 120});
       const char *t1 = "PROYECTO DCA";
       const char *t2 = "Pulsa ENTER o ESPACIO para jugar";
       const char *t3 =
@@ -501,7 +501,7 @@ int main() {
       DrawText(t3, GetScreenWidth() / 2 - w3 / 2, 240, 20, GREEN);
     } else if (state == GameState::MENU) {
       DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
-                    (Color){0, 0, 0, 120});
+                    Color{0, 0, 0, 120});
       const char *title = "SELECCIONA UN NIVEL";
       int wTitle = MeasureText(title, 32);
       DrawText(title, GetScreenWidth() / 2 - wTitle / 2 + 2, 100 + 2, 32,
@@ -525,7 +525,7 @@ int main() {
       DrawText(TextFormat("< %s >", themeName), 480, themeY, 24, YELLOW);
     } else if (state == GameState::VICTORY) {
       DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
-                    (Color){0, 255, 0, 60});
+                    Color{0, 255, 0, 60});
       const char *t1 = levelManager.isLastLevel() ? "¡NIVEL FINAL COMPLETADO!"
                                                   : "¡NIVEL COMPLETADO!";
       const char *t2 = levelManager.isLastLevel()
@@ -535,24 +535,24 @@ int main() {
       int w2 = MeasureText(t2, 24);
       DrawText(t1, GetScreenWidth() / 2 - w1 / 2 + 2, 150 + 2, 40, BLACK);
       DrawText(t1, GetScreenWidth() / 2 - w1 / 2, 150, 40,
-               (Color){255, 255, 180, 255});
+               Color{255, 255, 180, 255});
       DrawText(t2, GetScreenWidth() / 2 - w2 / 2 + 2, 220 + 2, 24, BLACK);
       DrawText(t2, GetScreenWidth() / 2 - w2 / 2, 220, 24, RAYWHITE);
     } else if (state == GameState::DEFEAT) {
       DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
-                    (Color){255, 0, 0, 60});
+                    Color{255, 0, 0, 60});
       const char *t1 = "DERROTA";
       const char *t2 = "ENTER: menu  |  R/ESPACIO: reintentar";
       int w1 = MeasureText(t1, 48);
       int w2 = MeasureText(t2, 24);
       DrawText(t1, GetScreenWidth() / 2 - w1 / 2 + 2, 150 + 2, 48, BLACK);
       DrawText(t1, GetScreenWidth() / 2 - w1 / 2, 150, 48,
-               (Color){255, 200, 200, 255});
+               Color{255, 200, 200, 255});
       DrawText(t2, GetScreenWidth() / 2 - w2 / 2 + 2, 220 + 2, 24, BLACK);
       DrawText(t2, GetScreenWidth() / 2 - w2 / 2, 220, 24, RAYWHITE);
     } else if (state == GameState::ALL_LEVELS_COMPLETE) {
       DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
-                    (Color){255, 215, 0, 80});
+                    Color{255, 215, 0, 80});
       const char *t1 = "¡TODOS LOS NIVELES COMPLETADOS!";
       const char *t2 = "¡FELICIDADES!";
       const char *t3 = "ENTER: volver al menú";
