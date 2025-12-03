@@ -1,4 +1,4 @@
-#include "player.h"
+﻿#include "player.h"
 #include "../core/textureManager.h"
 #include <vector>
 #include <cmath>
@@ -155,7 +155,7 @@ void Player::draw() {
     } else {
         // Fallback
         Rectangle r = bounds();
-        DrawRectangleRec(r, (Color){66, 135, 245, 255});
+        DrawRectangleRec(r, Color{66, 135, 245, 255});
         DrawRectangleLinesEx(r, 2, BLACK);
     }
 }
