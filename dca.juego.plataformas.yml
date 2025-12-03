@@ -55,7 +55,7 @@ modules:
         cat > Makefile.flatpak << 'EOF'
         CXX := ccache g++
         CXXFLAGS := -std=c++17 -Wall -MMD -MP -fPIE
-        LDFLAGS := -L/app/lib -pie
+        LDFLAGS := -L/app/lib -L/app/lib64 -pie
         LIBS := -lraylib -lGL -lm -lpthread -lrt -lX11
         
         SRC_DIR := src
