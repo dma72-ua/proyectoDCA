@@ -1,0 +1,49 @@
+name: Build Flatpak
+
+on:
+  release:
+    types: [created, published]
+  workflow_dispatch:  # Permite ejecutar manualmente desde la pestaña Actions
+
+jobs:
+  build-flatpak:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Instalar dependencias de Flatpak
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+      
+      - name: Instalar SDK y Runtime de Flatpak
+        run: |
+          sudo flatpak install -y flathub org.freedesktop.Platform//25.08
+          sudo flatpak install -y flathub org.freedesktop.Sdk//25.08
+      
+      - name: Construir Flatpak
+        run: |
+          flatpak-builder --repo=repo --force-clean build-dir dca.juego.plataformas.yml
+      
+      - name: Crear bundle del Flatpak
+        run: |
+          flatpak build-bundle repo dca.juego.plataformas.flatpak dca.juego.plataformas
+      
+      - name: Subir Flatpak al release
+        uses: softprops/action-gh-release@v1
+        if: github.event_name == 'release'
+        with:
+          files: dca.juego.plataformas.flatpak
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Subir Flatpak como artefacto (para ejecución manual)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: flatpak-bundle
+          path: dca.juego.plataformas.flatpak
+          retention-days: 30

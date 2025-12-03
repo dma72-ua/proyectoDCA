@@ -1,0 +1,105 @@
+id: dca.juego.plataformas
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+command: proyectoDCA
+
+finish-args:
+  # Permisos de OpenGL para renderizado
+  - --device=dri
+  - --socket=x11
+  - --share=ipc
+  # Permisos de audio (si tu juego usa sonido)
+  - --socket=pulseaudio
+  # Acceso a la red (si es necesario)
+  # - --share=network
+
+modules:
+  # Instalar ccache
+  - name: ccache
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DREDIS_STORAGE_BACKEND=OFF
+      - -DHIREDIS_FROM_INTERNET=OFF
+    sources:
+      - type: archive
+        url: https://github.com/ccache/ccache/releases/download/v4.9.1/ccache-4.9.1.tar.gz
+        sha256: 12834ecaaaf2db069dda1d1d991f91c19e3274cc04a471af5b64195def17e90f
+    cleanup:
+      - /share/man
+
+  # Instalar Raylib
+  - name: raylib
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_SHARED_LIBS=ON
+      - -DBUILD_EXAMPLES=OFF
+      - -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+    sources:
+      - type: archive
+        url: https://github.com/raysan5/raylib/archive/refs/tags/5.5.tar.gz
+        sha256: aea98ecf5bc5c5e0b789a76de0083a21a70457050ea4cc2aec7566935f5e258e
+
+  # Tu aplicación
+  - name: proyectoDCA
+    buildsystem: simple
+    build-commands:
+      # Crear directorio de instalación
+      - install -d /app/bin
+      # Limpiar cualquier build anterior
+      - rm -rf build
+      # Modificar el Makefile para usar las rutas de Flatpak
+      - |
+        cat > Makefile.flatpak << 'EOF'
+        CXX := ccache g++
+        CXXFLAGS := -std=c++17 -Wall -MMD -MP -fPIE
+        LDFLAGS := -L/app/lib -pie
+        LIBS := -lraylib -lGL -lm -lpthread -lrt -lX11
+        
+        SRC_DIR := src
+        BUILD_DIR := build
+        VENDOR_INCLUDE := vendor/include
+        
+        INCLUDES := -I $(SRC_DIR) -I $(VENDOR_INCLUDE) -I/app/include
+        
+        TARGET := proyectoDCA
+        
+        SOURCES := $(shell find $(SRC_DIR) -name '*.cpp')
+        OBJECTS := $(SOURCES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
+        DEPS := $(OBJECTS:.o=.d)
+        
+        .PHONY: all install
+        all: $(TARGET)
+        
+        $(TARGET): $(OBJECTS)
+        	$(CXX) -o $@ $^ $(LDFLAGS) $(LIBS)
+        
+        $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+        	@mkdir -p $(dir $@)
+        	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+        
+        install: all
+        	install -Dm755 $(TARGET) /app/bin/$(TARGET)
+        
+        -include $(DEPS)
+        EOF
+      # Compilar e instalar
+      - make -f Makefile.flatpak -j$(nproc) install
+      # Copiar assets al directorio de la aplicación
+      - install -d /app/share/proyectoDCA
+      - cp -r assets /app/share/proyectoDCA/assets
+      # Crear un script wrapper que establezca el directorio de trabajo correcto
+      - |
+        cat > /app/bin/proyectoDCA.real << 'EOF'
+        #!/bin/bash
+        cd /app/share/proyectoDCA
+        exec /app/bin/proyectoDCA.bin "$@"
+        EOF
+      - chmod +x /app/bin/proyectoDCA.real
+      - mv /app/bin/proyectoDCA /app/bin/proyectoDCA.bin
+      - mv /app/bin/proyectoDCA.real /app/bin/proyectoDCA
+    sources:
+      - type: dir
+        path: "."
