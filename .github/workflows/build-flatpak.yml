@@ -5,6 +5,9 @@ on:
     types: [created, published]
   workflow_dispatch:  # Permite ejecutar manualmente desde la pestaña Actions
 
+permissions:
+  contents: write  # Necesario para subir archivos al release
+
 jobs:
   build-flatpak:
     runs-on: ubuntu-latest
@@ -21,8 +24,8 @@ jobs:
       
       - name: Instalar SDK y Runtime de Flatpak
         run: |
-          sudo flatpak install -y flathub org.freedesktop.Platform//25.08
-          sudo flatpak install -y flathub org.freedesktop.Sdk//25.08
+          sudo flatpak install -y flathub org.freedesktop.Platform//24.08
+          sudo flatpak install -y flathub org.freedesktop.Sdk//24.08
       
       - name: Construir Flatpak
         run: |
