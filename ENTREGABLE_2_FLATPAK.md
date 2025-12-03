@@ -12,6 +12,9 @@ Para ejecutar el juego usar:
 
 `flatpak run dca.juego.plataformas`
 
+**En caso de error puede que no tengas instalado flathub o freedesktop, ejecuta:**
+
+`flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo`
 
 ## Crear el paquete Flatpak
 

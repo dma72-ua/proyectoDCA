@@ -4,6 +4,11 @@ Juego 2D tipo Mario Bros.
 
 GitHub Flow para gestión de ramas y GitHub Issues como sistema de Bugtracking.
 
+[Entregable 1: MakeFile](ENTREGABLE_1.md)
+[Entregable 2: Flatpak](ENTREGABLE_2_FLATPAK.md)
+[Entregable 3: CMake](ENTREGABLE_3.md)
+
+
 ## Ejecución del juego
 
 Primero darle permisos al fichero run.sh:
