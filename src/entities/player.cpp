@@ -127,18 +127,20 @@ void Player::draw() {
     
     if (texture.id != 0) {
         // ESCALA: Ajusta para cambiar el tamaño visual del sprite
-        float scale = 2.0f; // Prueba 1.5, 2.0, 2.5, 3.0
-        
-        // Tamaño de renderizado (50x37 pixels del frame × escala)
+        float scale = 2.0f;
         float renderWidth = 50.0f * scale;
         float renderHeight = 37.0f * scale;
-        
-        Rectangle destRec = { 
-            position.x - renderWidth * 0.5f,  // Centrar horizontalmente
-            position.y - renderHeight,         // Pies en position.y
-            renderWidth, 
-            renderHeight 
+
+        // Ajuste visual para bajar el sprite
+        float spriteFootOffset = 3.0f;   // ← PRUEBA entre 6 y 14
+
+        Rectangle destRec = {
+            position.x - renderWidth * 0.5f, 
+            position.y - renderHeight + spriteFootOffset,
+            renderWidth,
+            renderHeight
         };
+
         
         // Invertir si mira a la izquierda
         Rectangle source = frameRec;
