@@ -143,13 +143,14 @@ int main() {
   GameAudio audio;
   audio.Load();
 
-  Font uiFont = GetFontDefault();
+ 
   TextureManager::Instance().Load("player", "assets/player.png");
   TextureManager::Instance().Load("enemy", "assets/enemy.png");
   TextureManager::Instance().Load("bricks", "assets/bricks.png");
   TextureManager::Instance().Load("pipe", "assets/pipe.png");
   TextureManager::Instance().Load("heart", "assets/heart.png");
   TextureManager::Instance().Load("star", "assets/star.png");
+  TextureManager::Instance().Load("coin", "assets/coin.png");
 
   Camera2D camera = {0};
   camera.offset = {480, 350};
