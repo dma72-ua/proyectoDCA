@@ -169,9 +169,9 @@ void Player::updateAnimation(float deltaTime) {
     // CONFIGURACIÓN PARA TU SPRITESHEET 350x407 (7 cols × 11 filas)
     static const AnimConfig animConfigs[] = {
         {0, 4, 8.0f},   // IDLE: fila 0, 7 frames, 8 FPS
-        {1, 7, 12.0f},  // RUNNING: fila 1, 7 frames, 12 FPS
-        {3, 3, 10.0f},  // JUMPING: fila 3, 3 frames, 10 FPS
-        {4, 3, 10.0f}   // FALLING: fila 4, 3 frames, 10 FPS
+        {1, 6, 12.0f},  // RUNNING: fila 1, 7 frames, 12 FPS
+        {2, 7, 10.0f},  // JUMPING: fila 3, 3 frames, 10 FPS
+        {3, 3, 10.0f}   // FALLING: fila 4, 3 frames, 10 FPS
     };
     
     // Determinar estado de animación según física
