@@ -9,6 +9,8 @@ project(proyectoDCA
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+# Generar compile_commands.js para el lsp de clangd
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(VENDOR_DIR "${CMAKE_SOURCE_DIR}/vendor")
 set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
