@@ -1,20 +1,37 @@
-﻿#include "entities/enemy.h"
+﻿#include "core/textureManager.h"
+#include "entities/coin.h"
+#include "entities/enemy.h"
+#include "entities/player.h"
+#include "entities/star.h"
 #include "managers/envItem.h"
 #include "managers/levelManager.h"
-#include "entities/player.h"
-#include <thread>
-#include "core/textureManager.h"
-#include <vector>
-#include "entities/coin.h"
-#include "entities/star.h"
 #include <cmath>
+#include <unistd.h>
+#include <vector>
 
 // ----------------- Estados de juego -----------------
-enum class GameState { START, MENU, PLAYING, VICTORY, DEFEAT, ALL_LEVELS_COMPLETE };
-
+enum class GameState {
+  START,
+  MENU,
+  PLAYING,
+  VICTORY,
+  DEFEAT,
+  ALL_LEVELS_COMPLETE
+};
 // ----------------- Constantes de interacción -----------------
 static constexpr float STOMP_TOLERANCE = 10.0f;
 static constexpr float FALLING_VY_MIN = 120.0f;
+
+std::string GetAssetsPath() {
+  // Primero intentar la ruta de Flatpak
+  const char *flatpakPath = "/app/share/proyectoDCA/assets";
+  if (access(flatpakPath, F_OK) == 0) {
+    return std::string(flatpakPath) + "/";
+  }
+
+  // Si no está en Flatpak, usa ruta relativa para desarrollo
+  return "assets/";
+}
 
 // ----------------- Estructura para gestionar audio -----------------
 struct GameAudio {
@@ -24,15 +41,17 @@ struct GameAudio {
   Sound stompSound;
   Sound hurtSound;
   Sound victorySound;
-  
+
   void Load() {
-    backgroundMusic = LoadMusicStream("assets/music.mp3");
-    jumpSound = LoadSound("assets/jump.mp3");
-    coinSound = LoadSound("assets/coin.mp3");
-    stompSound = LoadSound("assets/stomp.mp3");
-    hurtSound = LoadSound("assets/hurt.mp3");
-    victorySound = LoadSound("assets/victory.mp3");
-    
+    std::string assetsPath = GetAssetsPath();
+
+    backgroundMusic = LoadMusicStream((assetsPath + "music.mp3").c_str());
+    jumpSound = LoadSound((assetsPath + "jump.mp3").c_str());
+    coinSound = LoadSound((assetsPath + "coin.mp3").c_str());
+    stompSound = LoadSound((assetsPath + "stomp.mp3").c_str());
+    hurtSound = LoadSound((assetsPath + "hurt.mp3").c_str());
+    victorySound = LoadSound((assetsPath + "victory.mp3").c_str());
+
     // Ajustar volúmenes (0.0f a 1.0f)
     SetMusicVolume(backgroundMusic, 0.45f);
     SetSoundVolume(jumpSound, 0.3f);
@@ -41,7 +60,7 @@ struct GameAudio {
     SetSoundVolume(hurtSound, 0.6f);
     SetSoundVolume(victorySound, 0.6f);
   }
-  
+
   void Unload() {
     UnloadMusicStream(backgroundMusic);
     UnloadSound(jumpSound);
@@ -50,18 +69,16 @@ struct GameAudio {
     UnloadSound(hurtSound);
     UnloadSound(victorySound);
   }
-  
-  void Update() {
-    UpdateMusicStream(backgroundMusic);
-  }
+
+  void Update() { UpdateMusicStream(backgroundMusic); }
 };
- 
+
 // ----------------- Temas -----------------
 struct Theme {
   const char *name;
   Color skyColor;
 };
- 
+
 static const std::vector<Theme> themes = {
     {"DIA", Color{138, 197, 255, 255}},
     {"NOCHE", Color{20, 24, 82, 255}},
@@ -87,9 +104,8 @@ static void DrawBricksFloor(const Rectangle &area) {
   const int tile = 16;
   for (int y = (int)area.y; y < (int)(area.y + area.height); y += tile) {
     for (int x = (int)area.x; x < (int)(area.x + area.width); x += tile) {
-      Color c = (((x / tile) + (y / tile)) % 2 == 0)
-                    ? Color{191, 111, 60, 255}
-                    : Color{173, 99, 52, 255};
+      Color c = (((x / tile) + (y / tile)) % 2 == 0) ? Color{191, 111, 60, 255}
+                                                     : Color{173, 99, 52, 255};
       DrawRectangle(x, y, tile, tile, c);
       DrawRectangleLines(x, y, tile, tile, Color{110, 58, 28, 255});
     }
@@ -111,7 +127,7 @@ static void DrawGoal(const Rectangle &goal) {
 void UpdateCameraPlayerBoundsPush(Camera2D *camera, Player *player) {
   static Vector2 bbox = {0.2f, 0.2f};
 
-  float delta = GetFrameTime();
+  // float delta = GetFrameTime();
   float width = GetScreenWidth();
   float height = GetScreenHeight();
 
@@ -137,20 +153,22 @@ void UpdateCameraPlayerBoundsPush(Camera2D *camera, Player *player) {
 int main() {
   InitWindow(960, 540, "proyectoDCA");
   SetTargetFPS(60);
-  
+
   // Inicializar sistema de audio
   InitAudioDevice();
   GameAudio audio;
   audio.Load();
 
- 
-  TextureManager::Instance().Load("player", "assets/player.png");
-  TextureManager::Instance().Load("enemy", "assets/enemy.png");
-  TextureManager::Instance().Load("bricks", "assets/bricks.png");
-  TextureManager::Instance().Load("pipe", "assets/pipe.png");
-  TextureManager::Instance().Load("heart", "assets/heart.png");
-  TextureManager::Instance().Load("star", "assets/star.png");
-  TextureManager::Instance().Load("coin", "assets/coin.png");
+  std::string assetsPath = GetAssetsPath();
+  TextureManager::Instance().Load("player",
+                                  (assetsPath + "player.png").c_str());
+  TextureManager::Instance().Load("enemy", (assetsPath + "enemy.png").c_str());
+  TextureManager::Instance().Load("bricks",
+                                  (assetsPath + "bricks.png").c_str());
+  TextureManager::Instance().Load("pipe", (assetsPath + "pipe.png").c_str());
+  TextureManager::Instance().Load("heart", (assetsPath + "heart.png").c_str());
+  TextureManager::Instance().Load("star", (assetsPath + "star.png").c_str());
+  TextureManager::Instance().Load("coin", (assetsPath + "coin.png").c_str());
 
   Camera2D camera = {0};
   camera.offset = {480, 350};
@@ -173,7 +191,7 @@ int main() {
 
   GameState state = GameState::START;
   int menuSelection = 0;
-  int themeSelection = 0;
+  long unsigned int themeSelection = 0;
 
   auto loadCurrentLevel = [&]() {
     const Level &level = levelManager.getCurrentLevel();
@@ -186,16 +204,16 @@ int main() {
 
     coins.clear();
     for (const auto &pos : level.coinPositions) {
-        coins.push_back(Coin(pos));
+      coins.push_back(Coin(pos));
     }
     totalCoinsInLevel = coins.size();
     coinsCollected = 0;
-    
+
     stars.clear();
     for (const auto &pos : level.starPositions) {
-        stars.push_back(Star(pos));
+      stars.push_back(Star(pos));
     }
-    
+
     playerLives = MAX_LIVES;
     printf("DEBUG: Nivel cargado. Vidas reseteadas a: %d\n", playerLives);
 
@@ -204,14 +222,14 @@ int main() {
   };
 
   loadCurrentLevel();
-  
+
   // Iniciar música de fondo
   PlayMusicStream(audio.backgroundMusic);
 
   while (!WindowShouldClose()) {
     float dt = GetFrameTime();
     const Level &currentLevel = levelManager.getCurrentLevel();
-    
+
     // Actualizar música
     audio.Update();
 
@@ -279,63 +297,66 @@ int main() {
       if (invincibilityTimer > 0.0f) {
         invincibilityTimer -= dt;
       }
-      
+
       // Detectar salto para reproducir sonido
       bool wasJumping = player.vy() < 0;
       player.UpdatePlayer(currentLevel.envItems, currentLevel.teleporters, dt);
       bool isJumping = player.vy() < 0;
-      
+
       if (isJumping && !wasJumping) {
         PlaySound(audio.jumpSound);
       }
-      
+
       for (auto &e : enemies)
         e.update(dt, currentLevel.envItems);
 
       Rectangle pb = player.bounds();
-      
+
       // Recolección de monedas
       for (auto &coin : coins) {
         if (coin.checkCollision(pb)) {
-          if (!coin.collected) { 
-            coin.startCollect(); 
+          if (!coin.collected) {
+            coin.startCollect();
             coinsCollected++;
             score += 100;
             PlaySound(audio.coinSound);
           }
         }
       }
-      
+
       // Recolección de estrellas
       for (auto &star : stars) {
         if (star.checkCollision(pb)) {
           if (!star.collected) {
             star.startCollect();
-            
+
             if (playerLives < MAX_LIVES) {
               // Restaurar una vida
               playerLives++;
-              printf("DEBUG: ¡Estrella! Vida restaurada. Vidas: %d\n", playerLives);
-              PlaySound(audio.coinSound); // Usar sonido de moneda o crear uno nuevo
+              printf("DEBUG: ¡Estrella! Vida restaurada. Vidas: %d\n",
+                     playerLives);
+              PlaySound(
+                  audio.coinSound); // Usar sonido de moneda o crear uno nuevo
             } else {
               // Dar puntos de bonificación
               score += 500;
-              printf("DEBUG: ¡Estrella! Bonus de 500 puntos. Total: %d\n", score);
+              printf("DEBUG: ¡Estrella! Bonus de 500 puntos. Total: %d\n",
+                     score);
               PlaySound(audio.coinSound);
             }
           }
         }
       }
-      
+
       // Colisión con enemigos
       bool diedThisFrame = false;
       for (auto &e : enemies) {
         if (!e.alive)
           continue;
-        
+
         if (invincibilityTimer > 0.0f)
           continue;
-          
+
         Rectangle eb = e.bounds();
         if (CheckCollisionRecs(pb, eb)) {
           float pbBottom = pb.y + pb.height;
@@ -354,11 +375,12 @@ int main() {
             PlaySound(audio.stompSound);
           } else {
             playerLives--;
-            printf("DEBUG: Perdiste una vida! Vidas restantes: %d\n", playerLives);
-            
+            printf("DEBUG: Perdiste una vida! Vidas restantes: %d\n",
+                   playerLives);
+
             invincibilityTimer = INVINCIBILITY_DURATION;
             PlaySound(audio.hurtSound);
-            
+
             if (playerLives <= 0) {
               state = GameState::DEFEAT;
               diedThisFrame = true;
@@ -387,63 +409,70 @@ int main() {
     // --------- DRAW ---------
     BeginDrawing();
     ClearBackground(themes[themeSelection].skyColor);
- 
+
     DrawRetroBackgroundScreen();
 
     BeginMode2D(camera);
     for (const auto &e : currentLevel.envItems) {
       bool drawn = false;
       if (e.textureId == 1) {
-          Texture2D tex = TextureManager::Instance().Get("bricks");
-          if (tex.id != 0) {
-              float tileSize = 64.0f;
-              
-              for (float y = 0; y < e.rect.height; y += tileSize) {
-                  for (float x = 0; x < e.rect.width; x += tileSize) {
-                      float drawW = (e.rect.width - x < tileSize) ? (e.rect.width - x) : tileSize;
-                      float drawH = (e.rect.height - y < tileSize) ? (e.rect.height - y) : tileSize;
-                      
-                      float sourceW = (drawW / tileSize) * tex.width;
-                      float sourceH = (drawH / tileSize) * tex.height;
-                      
-                      Rectangle source = { 0, 0, sourceW, sourceH };
-                      Rectangle dest = { e.rect.x + x, e.rect.y + y, drawW, drawH };
-                      
-                      DrawTexturePro(tex, source, dest, {0,0}, 0.0f, WHITE);
-                  }
-              }
-              drawn = true;
+        Texture2D tex = TextureManager::Instance().Get("bricks");
+        if (tex.id != 0) {
+          float tileSize = 64.0f;
+
+          for (float y = 0; y < e.rect.height; y += tileSize) {
+            for (float x = 0; x < e.rect.width; x += tileSize) {
+              float drawW =
+                  (e.rect.width - x < tileSize) ? (e.rect.width - x) : tileSize;
+              float drawH = (e.rect.height - y < tileSize) ? (e.rect.height - y)
+                                                           : tileSize;
+
+              float sourceW = (drawW / tileSize) * tex.width;
+              float sourceH = (drawH / tileSize) * tex.height;
+
+              Rectangle source = {0, 0, sourceW, sourceH};
+              Rectangle dest = {e.rect.x + x, e.rect.y + y, drawW, drawH};
+
+              DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
+            }
           }
+          drawn = true;
+        }
       } else if (e.textureId == 2) {
-          Texture2D tex = TextureManager::Instance().Get("pipe");
-          if (tex.id != 0) {
-               DrawTexturePro(tex, {0,0,(float)tex.width,(float)tex.height}, e.rect, {0,0}, 0.0f, WHITE);
-               drawn = true;
-          }
+        Texture2D tex = TextureManager::Instance().Get("pipe");
+        if (tex.id != 0) {
+          DrawTexturePro(tex, {0, 0, (float)tex.width, (float)tex.height},
+                         e.rect, {0, 0}, 0.0f, WHITE);
+          drawn = true;
+        }
       }
 
       if (!drawn) {
-          if (e.blocking)
-            DrawBricksFloor(e.rect);
-          else
-            DrawRectangleRec(e.rect, e.color);
+        if (e.blocking)
+          DrawBricksFloor(e.rect);
+        else
+          DrawRectangleRec(e.rect, e.color);
       }
     }
     DrawGoal(currentLevel.goal);
 
-    if (invincibilityTimer <= 0.0f || fmod(invincibilityTimer * 10.0f, 1.0f) > 0.5f) {
+    if (invincibilityTimer <= 0.0f ||
+        fmod(invincibilityTimer * 10.0f, 1.0f) > 0.5f) {
       player.Draw();
     }
     for (const auto &en : enemies)
       en.draw();
-    
-    for (const auto &coin : coins) coin.draw();
-    for (const auto &star : stars) star.draw();
+
+    for (const auto &coin : coins)
+      coin.draw();
+    for (const auto &star : stars)
+      star.draw();
 
     EndMode2D();
 
     // UI - Mostrar puntuación
-    const char* scoreText = TextFormat("Monedas: %d/%d  Puntos: %d", coinsCollected, totalCoinsInLevel, score);
+    const char *scoreText = TextFormat(
+        "Monedas: %d/%d  Puntos: %d", coinsCollected, totalCoinsInLevel, score);
     DrawText(scoreText, 10, 50, 22, BLACK);
     DrawText(scoreText, 8, 48, 22, Color{255, 215, 0, 255});
 
@@ -454,18 +483,20 @@ int main() {
       int heartSpacing = 35;
       int startX = GetScreenWidth() - (MAX_LIVES * heartSpacing) - 10;
       int startY = 50;
-      
+
       for (int i = 0; i < MAX_LIVES; i++) {
         if (i < playerLives) {
-          DrawTexturePro(heartTex, 
-            {0, 0, (float)heartTex.width, (float)heartTex.height},
-            {(float)(startX + i * heartSpacing), (float)startY, (float)heartSize, (float)heartSize},
-            {0, 0}, 0.0f, WHITE);
+          DrawTexturePro(heartTex,
+                         {0, 0, (float)heartTex.width, (float)heartTex.height},
+                         {(float)(startX + i * heartSpacing), (float)startY,
+                          (float)heartSize, (float)heartSize},
+                         {0, 0}, 0.0f, WHITE);
         } else {
-          DrawTexturePro(heartTex, 
-            {0, 0, (float)heartTex.width, (float)heartTex.height},
-            {(float)(startX + i * heartSpacing), (float)startY, (float)heartSize, (float)heartSize},
-            {0, 0}, 0.0f, Color{255, 255, 255, 80});
+          DrawTexturePro(heartTex,
+                         {0, 0, (float)heartTex.width, (float)heartTex.height},
+                         {(float)(startX + i * heartSpacing), (float)startY,
+                          (float)heartSize, (float)heartSize},
+                         {0, 0}, 0.0f, Color{255, 255, 255, 80});
         }
       }
     }
@@ -521,7 +552,7 @@ int main() {
         }
         DrawText(name.c_str(), 230, startY + i * spacing, 24, c);
       }
- 
+
       int themeY = startY + levelManager.getTotalLevels() * spacing + 40;
       DrawText("TEMA (Izquierda/Derecha):", 200, themeY, 20, RAYWHITE);
       const char *themeName = themes[themeSelection].name;
@@ -576,7 +607,7 @@ int main() {
   // Limpiar audio
   audio.Unload();
   CloseAudioDevice();
-  
+
   TextureManager::Instance().UnloadAll();
   CloseWindow();
   return 0;
