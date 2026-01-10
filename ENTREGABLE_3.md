@@ -16,18 +16,20 @@ y para ejecutar:
 
 ## Windows
 
-Ejecutar el fichero CMakeLists.txt desde visual studio
-
-o
-
 Para compilar hacer:
 
-`mkdir build-windows && cd build-windows`
+`mkdir build && cd build`
 
-`cmake --build . --config Release`
-
-`cd Release`
+`cmake .. && cmake --build`
 
 y para ejecutar:
 
 `./proyectoDCA.exe`
+
+o
+
+Ejecutar el fichero CMakeLists.txt desde visual studio (Si no funciona prueba a guardar CMakeLists.txt con control+s o cambiar la configuración en Proyecto->Configuración de CMake)
+
+o
+
+Entrar con CLion y ejecutar el .exe una vez se genera automáticamente
