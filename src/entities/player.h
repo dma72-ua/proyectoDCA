@@ -3,6 +3,7 @@ extern "C" {
 #include "../vendor/include/raylib.h"
 }
 #include <vector>
+#include "../managers/levelManager.h"
 #include "../managers/envItem.h"
 
 class Player {
@@ -25,13 +26,14 @@ public:
     Player(Vector2 position, float speed, bool canJump);
 
     // API original en tu player.cpp
-    void updatePlayer(float delta, std::vector<EnvItem>& envItems);
+    void updatePlayer(float delta, std::vector<EnvItem>& envItems, std::vector<Teleporter>& teleporters);
     void draw(); // sin const para cuadrar con tu .cpp
 
     // Aliases usados por main.cpp
-    void UpdatePlayer(const std::vector<EnvItem>& envItems, float dt) {
+    void UpdatePlayer(const std::vector<EnvItem>& envItems, const std::vector<Teleporter>& teleporters, float dt) {
         auto &nc = const_cast<std::vector<EnvItem>&>(envItems);
-        updatePlayer(dt, nc);
+        auto &nt = const_cast<std::vector<Teleporter>&>(teleporters);
+        updatePlayer(dt, nc, nt);
     }
     void Draw() { draw(); } // sin const
 

@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../vendor/include/raylib.h
+stdarg.h
+-
+stdbool.h
+-
+
+/home/usuario/Descargas/dca/proyectoDCA/src/managers/envItem.h
+../vendor/include/raylib.h
+/home/usuario/Descargas/dca/proyectoDCA/src/vendor/include/raylib.h
+
+/home/usuario/Descargas/dca/proyectoDCA/src/managers/levelManager.cpp
+levelManager.h
+/home/usuario/Descargas/dca/proyectoDCA/src/managers/levelManager.h
+
+/home/usuario/Descargas/dca/proyectoDCA/src/managers/levelManager.h
+envItem.h
+/home/usuario/Descargas/dca/proyectoDCA/src/managers/envItem.h
+string
+-
+vector
+-
+
