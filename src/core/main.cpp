@@ -127,7 +127,7 @@ static void DrawGoal(const Rectangle &goal) {
 void UpdateCameraPlayerBoundsPush(Camera2D *camera, Player *player) {
   static Vector2 bbox = {0.2f, 0.2f};
 
-  float delta = GetFrameTime();
+  // float delta = GetFrameTime();
   float width = GetScreenWidth();
   float height = GetScreenHeight();
 
@@ -191,7 +191,7 @@ int main() {
 
   GameState state = GameState::START;
   int menuSelection = 0;
-  int themeSelection = 0;
+  long unsigned int themeSelection = 0;
 
   auto loadCurrentLevel = [&]() {
     const Level &level = levelManager.getCurrentLevel();
