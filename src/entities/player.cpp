@@ -38,7 +38,7 @@ Player::Player(Vector2 position, float speed, bool canJump) {
   lastHorizontalSpeed = 0.0f;
 }
 
-void Player::updatePlayer(float delta, std::vector<EnvItem> &envItems) {
+void Player::updatePlayer(float delta, std::vector<EnvItem> &envItems, std::vector<Teleporter> &teleporters) {
   // Movimiento horizontal
   float deltaX = 0;
   if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
@@ -113,6 +113,18 @@ void Player::updatePlayer(float delta, std::vector<EnvItem> &envItems) {
   
   // Actualizar animación
   updateAnimation(delta);
+
+  // Teleportation
+  if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) {
+      Rectangle playerRect = {position.x, position.y - height, width, height};
+      for (const auto& teleporter : teleporters) {
+          if (CheckCollisionRecs(playerRect, teleporter.entry)) {
+              position = teleporter.destination;
+              speed = 0; // Reset vertical speed
+              break;
+          }
+      }
+  }
 }
 
 void Player::draw() {
