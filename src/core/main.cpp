@@ -23,14 +23,20 @@ static constexpr float STOMP_TOLERANCE = 10.0f;
 static constexpr float FALLING_VY_MIN = 120.0f;
 
 std::string GetAssetsPath() {
-  // Primero intentar la ruta de Flatpak
+  // Primero intenta la ruta local
+  const char *systemPath = "assets";
+  if (access(systemPath, F_OK) == 0) {
+    return std::string(systemPath) + "/";
+  }
+
+  // Si no está en la local, intentar la ruta de Flatpak
   const char *flatpakPath = "/app/share/proyectoDCA/assets";
   if (access(flatpakPath, F_OK) == 0) {
     return std::string(flatpakPath) + "/";
   }
 
-  // Si no está en Flatpak, usa ruta relativa para desarrollo
-  return "assets/";
+  // Si no está en Flatpak, usar ruta del sistema
+  return "/usr/share/assets/";
 }
 
 // ----------------- Estructura para gestionar audio -----------------
