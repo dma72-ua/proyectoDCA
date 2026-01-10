@@ -21,7 +21,7 @@ VENDOR_INCLUDE := vendor/include
 INCLUDES := -I $(SRC_DIR) -I $(VENDOR_INCLUDE)
 
 # Target executable
-TARGET := game
+TARGET := proyectoDCA
 
 # Automatically find all .cpp files recursively in src/
 SOURCES := $(shell find $(SRC_DIR) -name '*.cpp')
@@ -66,6 +66,10 @@ clean:
 run: all
 	@echo "Running $(TARGET)..."
 	./$(TARGET)
+
+.PHONY: install
+install: all
+	install -Dm755 $(TARGET) /app/bin/$(TARGET)
 
 # Include auto-generated dependency files (if they exist)
 # This enables automatic recompilation when headers change
