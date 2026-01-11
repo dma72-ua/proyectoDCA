@@ -28,11 +28,12 @@ source_group(TREE "${CMAKE_SOURCE_DIR}" FILES ${SOURCES})
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 
 set(CPACK_PACKAGE_NAME "proyectoDCA")
+set(CPACK_PACKAGE_VENDOR "Equipo de DCA: Enrique, Adnan, Salma y David")
 set(CPACK_PACKAGE_VERSION "0.10.0")
 
 if(WIN32)
     install(TARGETS proyectoDCA RUNTIME DESTINATION .)
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/assets DESTINATION assets)
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/assets DESTINATION .)
     set(CPACK_GENERATOR "NSIS")
     
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "proyectoDCA")
