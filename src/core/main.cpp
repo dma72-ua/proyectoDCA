@@ -6,7 +6,7 @@
 #include "managers/envItem.h"
 #include "managers/levelManager.h"
 #include <cmath>
-#include <unistd.h>
+#include <filesystem>
 #include <vector>
 
 // ----------------- Estados de juego -----------------
@@ -23,13 +23,25 @@ static constexpr float STOMP_TOLERANCE = 10.0f;
 static constexpr float FALLING_VY_MIN = 120.0f;
 
 std::string GetAssetsPath() {
-  // Primero intentar la ruta de Flatpak
-  const char *flatpakPath = "/app/share/proyectoDCA/assets";
-  if (access(flatpakPath, F_OK) == 0) {
-    return std::string(flatpakPath) + "/";
+  namespace fs = std::filesystem;
+
+  // Primero intenta la ruta local
+  if (fs::exists("assets")) {
+    return "assets/";
   }
 
-  // Si no está en Flatpak, usa ruta relativa para desarrollo
+#ifndef _WIN32
+  // Si no está en la local, intentar la ruta de Flatpak (solo Linux)
+  if (fs::exists("/app/share/proyectoDCA/assets")) {
+    return "/app/share/proyectoDCA/assets/";
+  }
+
+  // Si no está en Flatpak, usar ruta del sistema
+  if (fs::exists("/usr/share/proyectoDCA/assets")) {
+    return "/usr/share/proyectoDCA/assets/";
+  }
+#endif
+
   return "assets/";
 }
 

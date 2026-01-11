@@ -20,7 +20,7 @@ Para compilar hacer:
 
 `mkdir build && cd build`
 
-`cmake .. && cmake --build`
+`cmake .. && cmake --build .`
 
 y para ejecutar:
 
