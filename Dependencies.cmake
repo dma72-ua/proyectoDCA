@@ -27,3 +27,6 @@ if (NOT raylib_FOUND)
 else()
     message(STATUS "Usando Raylib instalado")
 endif()
+
+# BOOST TEST
+find_package(Boost REQUIRED COMPONENTS unit_test_framework)

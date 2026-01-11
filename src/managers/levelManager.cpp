@@ -6,7 +6,7 @@ LevelManager::LevelManager() {
 }
 
 bool LevelManager::advanceLevel() {
-  if (currentLevelIndex < levels.size() + 1) {
+  if (currentLevelIndex < levels.size() - 1) {
     currentLevelIndex++;
     return true;
   }
