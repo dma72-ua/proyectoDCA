@@ -9,8 +9,7 @@ project(proyectoDCA
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-# Generar compile_commands.js para el lsp de clangd
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Generar compile_commands.js para el lsp de clangd
 
 set(VENDOR_DIR "${CMAKE_SOURCE_DIR}/vendor")
 set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
@@ -27,6 +26,46 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 source_group(TREE "${CMAKE_SOURCE_DIR}" FILES ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
+
+set(CPACK_PACKAGE_NAME "proyectoDCA")
+set(CPACK_PACKAGE_VENDOR "Equipo de DCA: Enrique, Adnan, Salma y David")
+set(CPACK_PACKAGE_VERSION "0.10.0")
+
+if(WIN32)
+    install(TARGETS proyectoDCA RUNTIME DESTINATION .)
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/assets DESTINATION .)
+    set(CPACK_GENERATOR "NSIS")
+    
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "proyectoDCA")
+    set(CPACK_NSIS_DISPLAY_NAME "proyectoDCA")
+    set(CPACK_NSIS_PACKAGE_NAME "proyectoDCA")
+    
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "proyectoDCA.exe")
+    set(CPACK_NSIS_MENU_LINKS "proyectoDCA.exe" "proyectoDCA")
+
+endif()
+
+if(UNIX AND NOT APPLE)
+    install(TARGETS proyectoDCA DESTINATION bin)
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/assets 
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME})
+
+    # Para DEB
+    set(CPACK_GENERATOR "DEB;RPM")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Equipo de DCA: Enrique, Adnan, Salma y David")
+    set(CPACK_DEBIAN_PACKAGE_SECTION "games")
+    set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libraylib (>=5.0)")
+
+    # Para RPM
+    set(CPACK_RPM_PACKAGE_LICENSE "MIT")
+    set(CPACK_RPM_PACKAGE_GROUP "Amusements/Games")
+    set(CPACK_RPM_PACKAGE_REQUIRES "raylib >= 5.0")
+
+    set(CPACK_PACKAGE_DESCRIPTION "Juego 2D de plataformas")
+endif()
+
+include(CPack)
 
 # Directorio de salida unificado para MSVC
 if(MSVC OR CMAKE_GENERATOR MATCHES "Visual Studio")
@@ -55,11 +94,9 @@ endif()
 
 # Determinar donde poner los assets
 if(MSVC)
-    # MSVC pone los ejecutables en Debug/Release
-    set(ASSET_OUTPUT_DIR "${CMAKE_BINARY_DIR}/$<CONFIG>")
+    set(ASSET_OUTPUT_DIR "${CMAKE_BINARY_DIR}/$<CONFIG>") # MSVC pone los ejecutables en Debug/Release
 else()
-    # Otros generadores los ponen directamente en build
-    set(ASSET_OUTPUT_DIR "${CMAKE_BINARY_DIR}")
+    set(ASSET_OUTPUT_DIR "${CMAKE_BINARY_DIR}") # Otros generadores los ponen directamente en build
 endif()
 
 # Copiamos los assets a build
