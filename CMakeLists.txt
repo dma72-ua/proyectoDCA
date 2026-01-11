@@ -19,13 +19,19 @@ include(Dependencies.cmake)
 file(GLOB_RECURSE SOURCES
     "${CMAKE_SOURCE_DIR}/src/*.cpp"
 )
+list(FILTER SOURCES EXCLUDE REGEX ".*src/core/main.cpp$")
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
+add_library(core_lib STATIC ${SOURCES} ${HEADERS})
+target_include_directories(core_lib PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(core_lib PUBLIC raylib)
+
+add_executable(${PROJECT_NAME} src/core/main.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE core_lib)
 
 source_group(TREE "${CMAKE_SOURCE_DIR}" FILES ${SOURCES})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
+enable_testing()
+add_subdirectory(tests)
 
 set(CPACK_PACKAGE_NAME "proyectoDCA")
 set(CPACK_PACKAGE_VENDOR "Equipo de DCA: Enrique, Adnan, Salma y David")
