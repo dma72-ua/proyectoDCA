@@ -1,0 +1,64 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Nivel 1 - Primeros Pasos"
+msgstr "Nivel 1 - Primeros Pasos"
+
+msgid "Nivel 2 - El Desafío"
+msgstr "Nivel 2 - El Desafío"
+
+msgid "Nivel 3 - Maestría"
+msgstr "Nivel 3 - Maestría"
+
+msgid "Monedas: %d/%d  Puntos: %d"
+msgstr "Monedas: %d/%d  Puntos: %d"
+
+msgid "Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu."
+msgstr "Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu."
+
+msgid "Nivel %d/%d"
+msgstr "Nivel %d/%d"
+
+msgid "PROYECTO DCA"
+msgstr "PROYECTO DCA"
+
+msgid "Pulsa ENTER o ESPACIO para jugar"
+msgstr "Pulsa ENTER o ESPACIO para jugar"
+
+msgid "%d niveles disponibles"
+msgstr "%d niveles disponibles"
+
+msgid "SELECCIONA UN NIVEL"
+msgstr "SELECCIONA UN NIVEL"
+
+msgid "TEMA (Izquierda/Derecha):"
+msgstr "TEMA (Izquierda/Derecha):"
+
+msgid "¡NIVEL FINAL COMPLETADO!"
+msgstr "¡NIVEL FINAL COMPLETADO!"
+
+msgid "¡NIVEL COMPLETADO!"
+msgstr "¡NIVEL COMPLETADO!"
+
+msgid "ENTER: volver al menú"
+msgstr "ENTER: volver al menú"
+
+msgid "ENTER/ESPACIO: siguiente nivel"
+msgstr "ENTER/ESPACIO: siguiente nivel"
+
+msgid "DERROTA"
+msgstr "DERROTA"
+
+msgid "ENTER: menu  |  R/ESPACIO: reintentar"
+msgstr "ENTER: menu  |  R/ESPACIO: reintentar"
+
+msgid "¡TODOS LOS NIVELES COMPLETADOS!"
+msgstr "¡TODOS LOS NIVELES COMPLETADOS!"
+
+msgid "¡FELICIDADES!"
+msgstr "¡FELICIDADES!"
+
+msgid "IDIOMA (L):"
+msgstr "IDIOMA (L):"

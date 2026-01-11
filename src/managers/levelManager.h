@@ -39,11 +39,7 @@ public:
     if (index >= 0 && static_cast<size_t>(index) < levels.size())
       currentLevelIndex = index;
   };
-  std::string getLevelName(int index) {
-    if (index >= 0 && static_cast<size_t>(index) < levels.size())
-      return levels[index].name;
-    return "";
-  };
+  std::string getLevelName(int index);
 
 private:
   std::vector<Level> levels;

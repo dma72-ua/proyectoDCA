@@ -13,6 +13,9 @@ bool LevelManager::advanceLevel() {
   return false;
 }
 
+#include <libintl.h>
+#define _(String) gettext(String)
+
 void LevelManager::initializeLevels() {
   // LEVEL 1 - Tutorial/Easy
   levels.push_back({
@@ -225,4 +228,10 @@ void LevelManager::initializeLevels() {
           {{5205, 390, 38, 20}, {625, 50}}
       }
   });
+}
+std::string LevelManager::getLevelName(int index) {
+  if (index >= 0 && static_cast<size_t>(index) < levels.size()) {
+    return _(levels[index].name.c_str());
+  }
+  return "";
 }
