@@ -24,24 +24,24 @@ static constexpr float FALLING_VY_MIN = 120.0f;
 
 std::string GetAssetsPath() {
   namespace fs = std::filesystem;
-  
+
   // Primero intenta la ruta local
   if (fs::exists("assets")) {
     return "assets/";
   }
-  
+
 #ifndef _WIN32
   // Si no está en la local, intentar la ruta de Flatpak (solo Linux)
   if (fs::exists("/app/share/proyectoDCA/assets")) {
     return "/app/share/proyectoDCA/assets/";
   }
-  
+
   // Si no está en Flatpak, usar ruta del sistema
-  if (fs::exists("/usr/share/assets")) {
-    return "/usr/share/assets/";
+  if (fs::exists("/usr/share/proyectoDCA/assets")) {
+    return "/usr/share/proyectoDCA/assets/";
   }
 #endif
-  
+
   return "assets/";
 }
 
