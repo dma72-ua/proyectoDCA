@@ -7,9 +7,9 @@
 #include "managers/levelManager.h"
 #include <cmath>
 #include <filesystem>
-#include <vector>
 #include <libintl.h>
 #include <locale.h>
+#include <vector>
 
 #define _(String) gettext(String)
 
@@ -96,9 +96,9 @@ struct Theme {
 };
 
 static const std::vector<Theme> themes = {
-    {"DIA", Color{138, 197, 255, 255}},
-    {"NOCHE", Color{20, 24, 82, 255}},
-    {"ATARDECER", Color{255, 145, 77, 255}}};
+    {_("DIA"), Color{138, 197, 255, 255}},
+    {_("NOCHE"), Color{20, 24, 82, 255}},
+    {_("ATARDECER"), Color{255, 145, 77, 255}}};
 
 // ----------------- Fondo retro (screen space) -----------------
 static void DrawRetroBackgroundScreen() {
@@ -178,7 +178,7 @@ int main() {
   setlocale(LC_ALL, "");
   bindtextdomain("proyectoDCA", "locales");
   textdomain("proyectoDCA");
-  
+
   // Idioma por defecto: Español
   ChangeLanguage("es");
 
@@ -288,8 +288,8 @@ int main() {
         if (themeSelection < 0)
           themeSelection = themes.size() - 1;
       } else if (IsKeyPressed(KEY_L)) {
-          isEnglish = !isEnglish;
-          ChangeLanguage(isEnglish ? "en" : "es");
+        isEnglish = !isEnglish;
+        ChangeLanguage(isEnglish ? "en" : "es");
       }
 
       if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
@@ -506,8 +506,9 @@ int main() {
     EndMode2D();
 
     // UI - Mostrar puntuación
-    const char *scoreText = TextFormat(
-        _( "Monedas: %d/%d  Puntos: %d" ), coinsCollected, totalCoinsInLevel, score);
+    const char *scoreText =
+        TextFormat(_("Monedas: %d/%d  Puntos: %d"), coinsCollected,
+                   totalCoinsInLevel, score);
     DrawText(scoreText, 10, 50, 22, BLACK);
     DrawText(scoreText, 8, 48, 22, Color{255, 215, 0, 255});
 
@@ -537,15 +538,15 @@ int main() {
     }
 
     DrawText(
-        _( "Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu." ),
+        _("Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu."),
         12, 10, 18, BLACK);
     DrawText(
-        _( "Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu." ),
+        _("Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu."),
         10, 8, 18, RAYWHITE);
 
     if (state == GameState::PLAYING) {
       const char *levelText =
-          TextFormat(_( "Nivel %d/%d" ), levelManager.getCurrentLevelNumber(),
+          TextFormat(_("Nivel %d/%d"), levelManager.getCurrentLevelNumber(),
                      levelManager.getTotalLevels());
       DrawText(levelText, GetScreenWidth() - 150, 10, 20, BLACK);
       DrawText(levelText, GetScreenWidth() - 152, 8, 20, YELLOW);
@@ -555,10 +556,10 @@ int main() {
     if (state == GameState::START) {
       DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
                     Color{0, 0, 0, 120});
-      const char *t1 = _( "PROYECTO DCA" );
-      const char *t2 = _( "Pulsa ENTER o ESPACIO para jugar" );
-      const char *t3 =
-          TextFormat(_( "%d niveles disponibles" ), levelManager.getTotalLevels());
+      const char *t1 = _("PROYECTO DCA");
+      const char *t2 = _("Pulsa ENTER o ESPACIO para jugar");
+      const char *t3 = TextFormat(_("%d niveles disponibles"),
+                                  levelManager.getTotalLevels());
       int w1 = MeasureText(t1, 48);
       int w2 = MeasureText(t2, 24);
       int w3 = MeasureText(t3, 20);
@@ -571,7 +572,7 @@ int main() {
     } else if (state == GameState::MENU) {
       DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
                     Color{0, 0, 0, 120});
-      const char *title = _( "SELECCIONA UN NIVEL" );
+      const char *title = _("SELECCIONA UN NIVEL");
       int wTitle = MeasureText(title, 32);
       DrawText(title, GetScreenWidth() / 2 - wTitle / 2 + 2, 100 + 2, 32,
                BLACK);
@@ -589,21 +590,22 @@ int main() {
       }
 
       int themeY = startY + levelManager.getTotalLevels() * spacing + 40;
-      DrawText(_( "TEMA (Izquierda/Derecha):" ), 200, themeY, 20, RAYWHITE);
+      DrawText(_("TEMA (Izquierda/Derecha):"), 200, themeY, 20, RAYWHITE);
       const char *themeName = themes[themeSelection].name;
       DrawText(TextFormat("< %s >", themeName), 480, themeY, 24, YELLOW);
 
       int langY = themeY + 40;
-      DrawText(_( "IDIOMA (L):" ), 200, langY, 20, RAYWHITE);
+      DrawText(_("IDIOMA (L):"), 200, langY, 20, RAYWHITE);
       DrawText(isEnglish ? "ENGLISH" : "ESPAÑOL", 480, langY, 24, YELLOW);
     } else if (state == GameState::VICTORY) {
       DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
                     Color{0, 255, 0, 60});
-      const char *t1 = levelManager.isLastLevel() ? _( "¡NIVEL FINAL COMPLETADO!" )
-                                                  : _( "¡NIVEL COMPLETADO!" );
+      const char *t1 = levelManager.isLastLevel()
+                           ? _("¡NIVEL FINAL COMPLETADO!")
+                           : _("¡NIVEL COMPLETADO!");
       const char *t2 = levelManager.isLastLevel()
-                           ? _( "ENTER: volver al menú" )
-                           : _( "ENTER/ESPACIO: siguiente nivel" );
+                           ? _("ENTER: volver al menú")
+                           : _("ENTER/ESPACIO: siguiente nivel");
       int w1 = MeasureText(t1, 40);
       int w2 = MeasureText(t2, 24);
       DrawText(t1, GetScreenWidth() / 2 - w1 / 2 + 2, 150 + 2, 40, BLACK);
@@ -614,8 +616,8 @@ int main() {
     } else if (state == GameState::DEFEAT) {
       DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
                     Color{255, 0, 0, 60});
-      const char *t1 = _( "DERROTA" );
-      const char *t2 = _( "ENTER: menu  |  R/ESPACIO: reintentar" );
+      const char *t1 = _("DERROTA");
+      const char *t2 = _("ENTER: menu  |  R/ESPACIO: reintentar");
       int w1 = MeasureText(t1, 48);
       int w2 = MeasureText(t2, 24);
       DrawText(t1, GetScreenWidth() / 2 - w1 / 2 + 2, 150 + 2, 48, BLACK);
@@ -626,9 +628,9 @@ int main() {
     } else if (state == GameState::ALL_LEVELS_COMPLETE) {
       DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
                     Color{255, 215, 0, 80});
-      const char *t1 = _( "¡TODOS LOS NIVELES COMPLETADOS!" );
-      const char *t2 = _( "¡FELICIDADES!" );
-      const char *t3 = _( "ENTER: volver al menú" );
+      const char *t1 = _("¡TODOS LOS NIVELES COMPLETADOS!");
+      const char *t2 = _("¡FELICIDADES!");
+      const char *t3 = _("ENTER: volver al menú");
       int w1 = MeasureText(t1, 36);
       int w2 = MeasureText(t2, 48);
       int w3 = MeasureText(t3, 24);

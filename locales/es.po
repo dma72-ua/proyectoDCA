@@ -36,6 +36,15 @@ msgstr "SELECCIONA UN NIVEL"
 msgid "TEMA (Izquierda/Derecha):"
 msgstr "TEMA (Izquierda/Derecha):"
 
+msgid "DIA"
+msgstr "DIA"
+
+msgid "ATARDECER"
+msgstr "ATARDECER"
+
+msgid "NOCHE"
+msgstr "NOCHE"
+
 msgid "¡NIVEL FINAL COMPLETADO!"
 msgstr "¡NIVEL FINAL COMPLETADO!"
 
