@@ -1,7 +1,9 @@
 CXX := g++
 CXXFLAGS := -std=c++17 -Wall -MMD -MP
 LDFLAGS := -L vendor/lib
-LIBS := -lraylib -lGL -lm -lpthread -lrt -lX11
+LIBS := -lraylib -lGL -lm -lpthread -lrt -lX11 -ldl
+
+# Directories
 SRC_DIR := src
 BUILD_DIR := build
 VENDOR_INCLUDE := vendor/include

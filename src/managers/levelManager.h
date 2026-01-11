@@ -9,6 +9,11 @@ struct EnemySpawn {
   int direction;
 };
 
+struct Teleporter {
+  Rectangle entry;
+  Vector2 destination;
+};
+
 struct Level {
   std::string name;
   Vector2 playerStart;
@@ -18,6 +23,7 @@ struct Level {
   Color skyColor;
   std::vector<Vector2> coinPositions;
   std::vector<Vector2> starPositions;
+  std::vector<Teleporter> teleporters;
 };
 
 class LevelManager {

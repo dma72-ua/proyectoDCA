@@ -302,14 +302,17 @@ int main() {
     }
 
     // --------- UPDATE (solo durante PLAYING) ---------
-    if (state == GameState::PLAYING) {
+    else if (state == GameState::PLAYING) {
+      if (IsKeyPressed(KEY_ENTER)) {
+        state = GameState::START;
+      }
       if (invincibilityTimer > 0.0f) {
         invincibilityTimer -= dt;
       }
 
       // Detectar salto para reproducir sonido
       bool wasJumping = player.vy() < 0;
-      player.UpdatePlayer(currentLevel.envItems, dt);
+      player.UpdatePlayer(currentLevel.envItems, currentLevel.teleporters, dt);
       bool isJumping = player.vy() < 0;
 
       if (isJumping && !wasJumping) {
