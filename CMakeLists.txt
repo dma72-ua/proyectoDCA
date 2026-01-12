@@ -125,3 +125,32 @@ add_custom_target(run
     COMMENT "Corriendo ${PROJECT_NAME}..."
 )
 endif()
+
+find_program(GETTEXT_MSGFMT_EXECUTABLE msgfmt)
+
+if(GETTEXT_MSGFMT_EXECUTABLE AND EXISTS "${CMAKE_SOURCE_DIR}/po")
+    set(LANGS es en)
+    foreach(LANG ${LANGS})
+        set(PO_FILE "${CMAKE_SOURCE_DIR}/po/${LANG}.po")
+        set(MO_DIR "${CMAKE_BINARY_DIR}/locales/${LANG}/LC_MESSAGES")
+        set(MO_FILE "${MO_DIR}/${PROJECT_NAME}.mo")
+
+        file(MAKE_DIRECTORY ${MO_DIR})
+
+        add_custom_command(
+            OUTPUT ${MO_FILE}
+            COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o ${MO_FILE} ${PO_FILE}
+            DEPENDS ${PO_FILE}
+            COMMENT "Compilando traducción ${LANG}..."
+        )
+        list(APPEND MO_FILES ${MO_FILE})
+
+        # Instalar para el paquete .deb / .rpm
+        if(UNIX AND NOT APPLE)
+            install(FILES ${MO_FILE} DESTINATION share/${PROJECT_NAME}/locales/${LANG}/LC_MESSAGES)
+        endif()
+    endforeach()
+
+    add_custom_target(translations ALL DEPENDS ${MO_FILES})
+    add_dependencies(${PROJECT_NAME} translations)
+endif()

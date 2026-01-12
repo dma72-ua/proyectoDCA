@@ -212,6 +212,11 @@ void UpdateCameraPlayerBoundsPush(Camera2D *camera, Player *player) {
 #ifdef __linux__
 void ChangeLanguage(const char *lang) {
   setenv("LANGUAGE", lang, 1);
+  setenv("LANG", lang, 1);
+
+  extern int  _nl_msg_cat_cntr;
+  ++_nl_msg_cat_cntr;
+
   setlocale(LC_ALL, "");
   // Reiniciar el dominio de texto para recargar las traducciones
   textdomain("proyectoDCA");
@@ -219,7 +224,7 @@ void ChangeLanguage(const char *lang) {
 #endif
 
 int main() {
-  #ifdef __linux_
+  #ifdef __linux__
   // Inicialización de gettext
   setlocale(LC_ALL, "");
   bindtextdomain("proyectoDCA", "locales");
@@ -336,7 +341,7 @@ int main() {
           themeSelection = themes.size() - 1;
       } else if (IsKeyPressed(KEY_L)) {
         isEnglish = !isEnglish;
-        #ifdef __linux_
+        #ifdef __linux__
         ChangeLanguage(isEnglish ? "en" : "es");
         #endif
       }
