@@ -97,9 +97,9 @@ struct Theme {
 };
 
 static const std::vector<Theme> themes = {
-    {_("DIA"), Color{138, 197, 255, 255}},
-    {_("NOCHE"), Color{20, 24, 82, 255}},
-    {_("ATARDECER"), Color{255, 145, 77, 255}}};
+    {"DIA", Color{138, 197, 255, 255}},
+    {"NOCHE", Color{20, 24, 82, 255}},
+    {"ATARDECER", Color{255, 145, 77, 255}}};
 
 // ----------------- Fondo retro (screen space) -----------------
 static void DrawRetroBackgroundScreen(float scrollTimer, float cameraY) {
@@ -276,7 +276,7 @@ int main() {
 
   GameState state = GameState::START;
   int menuSelection = 0;
-  long unsigned int themeSelection = 0;
+  int themeSelection = 0;
   bool isEnglish = false;
 
   auto loadCurrentLevel = [&]() {
@@ -335,7 +335,7 @@ int main() {
           menuSelection = levelManager.getTotalLevels() - 1;
       } else if (IsKeyPressed(KEY_RIGHT)) {
         themeSelection++;
-        if (themeSelection >= themes.size())
+        if (themeSelection >= (int)themes.size())
           themeSelection = 0;
       } else if (IsKeyPressed(KEY_LEFT)) {
         themeSelection--;
@@ -656,7 +656,7 @@ int main() {
 
       int themeY = startY + levelManager.getTotalLevels() * spacing + 40;
       DrawText(_("TEMA (Izquierda/Derecha):"), 200, themeY, 20, RAYWHITE);
-      const char *themeName = themes[themeSelection].name;
+      const char *themeName = _(themes[themeSelection].name);
       DrawText(TextFormat("< %s >", themeName), 480, themeY, 24, YELLOW);
 
       int langY = themeY + 40;
