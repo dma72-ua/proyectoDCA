@@ -10,7 +10,7 @@
 #include <vector>
 #include <libintl.h>
 #include <locale.h>
-
+#include "entities/powerup.h"
 #define _(String) gettext(String)
 
 // ----------------- Estados de juego -----------------
@@ -201,6 +201,10 @@ int main() {
   TextureManager::Instance().Load("star", (assetsPath + "star.png").c_str());
   TextureManager::Instance().Load("coin", (assetsPath + "coin.png").c_str());
 
+  TextureManager::Instance().Load("boots", (assetsPath + "Question_0.png").c_str());
+  TextureManager::Instance().Load("wings", (assetsPath + "Question_0.png").c_str());
+  TextureManager::Instance().Load("shield", (assetsPath + "Question_0.png").c_str());
+
   Camera2D camera = {0};
   camera.offset = {480, 350};
   camera.zoom = 0.875f;
@@ -219,6 +223,8 @@ int main() {
   LevelManager levelManager;
   Player player{};
   std::vector<Enemy> enemies;
+
+  std::vector<PowerUp> powerUps;
 
   GameState state = GameState::START;
   int menuSelection = 0;
@@ -244,6 +250,12 @@ int main() {
     stars.clear();
     for (const auto &pos : level.starPositions) {
       stars.push_back(Star(pos));
+    }
+
+    // Cargar power-ups
+    powerUps.clear();
+    for (const auto &powerUpData : level.powerUpPositions) {
+      powerUps.push_back(PowerUp(powerUpData.first, static_cast<PowerUpType>(powerUpData.second)));
     }
 
     playerLives = MAX_LIVES;
@@ -383,13 +395,22 @@ int main() {
         }
       }
 
+      // Actualizar y verificar colisiones con power-ups
+      
+      for (auto &powerUp : powerUps) {
+        if (powerUp.checkCollision(pb)) {
+          powerUp.startCollect();
+          player.activatePowerUp((int)powerUp.type);
+          // PlaySound(audio.powerUpSound);
+        }
+      }
+
+
+
       // Colisión con enemigos
       bool diedThisFrame = false;
       for (auto &e : enemies) {
         if (!e.alive)
-          continue;
-
-        if (invincibilityTimer > 0.0f)
           continue;
 
         Rectangle eb = e.bounds();
@@ -409,6 +430,15 @@ int main() {
             score += 200;
             PlaySound(audio.stompSound);
           } else {
+            
+            if (player.hasShield) {
+    player.deactivatePowerUp(2);
+    invincibilityTimer = INVINCIBILITY_DURATION;
+    //PlaySound(audio.hurtSound);
+    continue;  // No pierde vida
+}
+        if (invincibilityTimer > 0.0f)
+          continue;
             playerLives--;
             printf("DEBUG: Perdiste una vida! Vidas restantes: %d\n",
                    playerLives);
@@ -502,6 +532,8 @@ int main() {
       coin.draw();
     for (const auto &star : stars)
       star.draw();
+    for (const auto &powerUp : powerUps)
+      powerUp.draw();
 
     EndMode2D();
 
@@ -534,6 +566,20 @@ int main() {
                          {0, 0}, 0.0f, Color{255, 255, 255, 80});
         }
       }
+    }
+    // Mostrar power-ups activos
+    int powerUpY = 90;
+    if (player.hasSpeedBoots) {
+      DrawText("Botas [B]", 10, powerUpY, 18, Color{76, 187, 23, 255});
+      powerUpY += 25;
+    }
+    if (player.hasAngelWings) {
+      DrawText("Alas [W]", 10, powerUpY, 18, Color{135, 206, 250, 255});
+      powerUpY += 25;
+    }
+    if (player.hasShield) {
+      DrawText("Escudo [S]", 10, powerUpY, 18, Color{255, 215, 0, 255});
+      powerUpY += 25;
     }
 
     DrawText(
