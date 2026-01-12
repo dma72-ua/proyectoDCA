@@ -70,6 +70,12 @@ if(UNIX AND NOT APPLE)
             endif()
             
             message(STATUS "Boost listo en: ${boost_SOURCE_DIR}")
+
+            # Definimos el target para que target_link_libraries no falle
+            add_library(Boost::unit_test_framework INTERFACE IMPORTED)
+            set_target_properties(Boost::unit_test_framework PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${boost_SOURCE_DIR}"
+            )
         endif()
     endif()
 elseif(WIN32)
