@@ -14,6 +14,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Generar compile_commands.js para el lsp 
 set(VENDOR_DIR "${CMAKE_SOURCE_DIR}/vendor")
 set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
 
+include(GNUInstallDirs)
 include(Dependencies.cmake)
 
 file(GLOB_RECURSE SOURCES
@@ -56,8 +57,9 @@ if(UNIX AND NOT APPLE)
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/assets 
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME})
 
-    # Para DEB
     set(CPACK_GENERATOR "DEB;RPM")
+
+    # Para DEB
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Equipo de DCA: Enrique, Adnan, Salma y David")
     set(CPACK_DEBIAN_PACKAGE_SECTION "games")
     set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
@@ -73,6 +75,10 @@ endif()
 
 include(CPack)
 
+if(EXISTS ${CMAKE_SOURCE_DIR}/CPackConfig.cmake)
+    include("${CMAKE_SOURCE_DIR}/CPackConfig.cmake")
+endif()
+
 # Directorio de salida unificado para MSVC
 if(MSVC OR CMAKE_GENERATOR MATCHES "Visual Studio")
     set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -86,16 +92,6 @@ else()
     set_target_properties(${PROJECT_NAME} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
     )
-endif()
-
-if(WIN32)
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION .)
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/assets DESTINATION assets)
-endif()
-
-if(UNIX AND NOT APPLE)
-    install(TARGETS ${PROJECT_NAME} DESTINATION bin)
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/assets DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/assets)
 endif()
 
 # Determinar donde poner los assets
