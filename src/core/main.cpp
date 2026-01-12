@@ -696,15 +696,19 @@ int main() {
       const char *t1 = _("¡TODOS LOS NIVELES COMPLETADOS!");
       const char *t2 = _("¡FELICIDADES!");
       const char *t3 = _("ENTER: volver al menú");
+      const char *t4 = TextFormat(_("Has conseguido: %d puntos"), score);
       int w1 = MeasureText(t1, 36);
       int w2 = MeasureText(t2, 48);
       int w3 = MeasureText(t3, 24);
+      int w4 = MeasureText(t4, 36);
       DrawText(t1, GetScreenWidth() / 2 - w1 / 2 + 2, 100 + 2, 36, BLACK);
       DrawText(t1, GetScreenWidth() / 2 - w1 / 2, 100, 36, YELLOW);
       DrawText(t2, GetScreenWidth() / 2 - w2 / 2 + 2, 160 + 2, 48, BLACK);
       DrawText(t2, GetScreenWidth() / 2 - w2 / 2, 160, 48, GOLD);
-      DrawText(t3, GetScreenWidth() / 2 - w3 / 2 + 2, 240 + 2, 24, BLACK);
-      DrawText(t3, GetScreenWidth() / 2 - w3 / 2, 240, 24, RAYWHITE);
+      DrawText(t3, GetScreenWidth() / 2 - w3 / 2 + 2, 320 + 2, 24, BLACK);
+      DrawText(t3, GetScreenWidth() / 2 - w3 / 2, 320, 24, RAYWHITE);
+      DrawText(t4, GetScreenWidth() / 2 - w4 / 2 + 2, 240 + 2, 36, BLACK);
+      DrawText(t4, GetScreenWidth() / 2 - w4 / 2, 240, 36, YELLOW);
     }
 
     EndDrawing();
