@@ -28,46 +28,56 @@ else()
     message(STATUS "Usando Raylib instalado")
 endif()
 
-# BOOST TEST
-find_package(Boost COMPONENTS unit_test_framework)
+# BOOST TEST - Solo en Linux
+if(UNIX AND NOT APPLE)
+    find_package(Boost COMPONENTS unit_test_framework)
 
-if (NOT Boost_FOUND)
-  message(STATUS "Boost no encontrado, descargando desde repositorio...")
+    if (NOT Boost_FOUND)
+        message(STATUS "Boost no encontrado, descargando desde repositorio...")
 
-  FetchContent_Declare(
-      Boost
-      URL https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.gz
-      DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-  )
+        FetchContent_Declare(
+            Boost
+            URL https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.gz
+            DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+        )
 
-  FetchContent_GetProperties(Boost)
-  if(NOT boost_POPULATED)
-      message(STATUS "Descargando Boost...")
-      FetchContent_Populate(Boost)
-      
-      # Ejecutar bootstrap para preparar Boost (solo headers, no compilar)
-      message(STATUS "Preparando headers de Boost...")
-      execute_process(
-          COMMAND ./bootstrap.sh --with-libraries=test
-          WORKING_DIRECTORY ${boost_SOURCE_DIR}
-          RESULT_VARIABLE bootstrap_result
-      )
-      
-      if(bootstrap_result)
-          message(FATAL_ERROR "Bootstrap de Boost falló")
-      endif()
-      
-      # Generar headers (no compila, solo prepara)
-      execute_process(
-          COMMAND ./b2 headers
-          WORKING_DIRECTORY ${boost_SOURCE_DIR}
-          RESULT_VARIABLE b2_result
-      )
-      
-      if(b2_result)
-          message(FATAL_ERROR "Generación de headers de Boost falló")
-      endif()
-      
-      message(STATUS "Boost listo en: ${boost_SOURCE_DIR}")
-  endif()
+        FetchContent_GetProperties(Boost)
+        if(NOT boost_POPULATED)
+            message(STATUS "Descargando Boost...")
+            FetchContent_Populate(Boost)
+            
+            # Ejecutar bootstrap para preparar Boost (solo headers, no compilar)
+            message(STATUS "Preparando headers de Boost...")
+            execute_process(
+                COMMAND ./bootstrap.sh --with-libraries=test
+                WORKING_DIRECTORY ${boost_SOURCE_DIR}
+                RESULT_VARIABLE bootstrap_result
+            )
+            
+            if(bootstrap_result)
+                message(FATAL_ERROR "Bootstrap de Boost falló")
+            endif()
+            
+            # Generar headers (no compila, solo prepara)
+            execute_process(
+                COMMAND ./b2 headers
+                WORKING_DIRECTORY ${boost_SOURCE_DIR}
+                RESULT_VARIABLE b2_result
+            )
+            
+            if(b2_result)
+                message(FATAL_ERROR "Generación de headers de Boost falló")
+            endif()
+            
+            message(STATUS "Boost listo en: ${boost_SOURCE_DIR}")
+
+            # Definimos el target para que target_link_libraries no falle
+            add_library(Boost::unit_test_framework INTERFACE IMPORTED)
+            set_target_properties(Boost::unit_test_framework PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${boost_SOURCE_DIR}"
+            )
+        endif()
+    endif()
+elseif(WIN32)
+    message(STATUS "Boost no se descarga en Windows - se asume que los tests no se compilarán")
 endif()

@@ -15,8 +15,8 @@ msgstr "Nivel 3 - Maestría"
 msgid "Monedas: %d/%d  Puntos: %d"
 msgstr "Monedas: %d/%d  Puntos: %d"
 
-msgid "Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu."
-msgstr "Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu."
+msgid "Flechas/A D moverse, ESPACIO para saltar. ENTER menu."
+msgstr "Flechas/A D moverse, ESPACIO para saltar. ENTER menu."
 
 msgid "Nivel %d/%d"
 msgstr "Nivel %d/%d"

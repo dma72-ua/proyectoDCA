@@ -4,6 +4,10 @@ Juego 2D tipo Mario Bros.
 
 GitHub Flow para gestión de ramas y GitHub Issues como sistema de Bugtracking.
 
+### **Enlace Itch.io**
+
+https://dma72-ua.itch.io/proyectodca
+
 ### Instrucciones entregable 1
 
 [Entregable 1: MakeFile](ENTREGABLE_1.md)

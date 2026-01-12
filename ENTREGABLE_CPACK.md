@@ -26,11 +26,11 @@ Luego puedes correrlo desde la terminal simplemente poniendo desde cualquier dir
 
 `mkdir build && cd build`
 
-`cmake .. && cmake --build . --config Release`
+`cmake -DBUILD_TESTS=OFF .. && cmake --build . --config Release`
 
 `cpack`
 
-Ahora puedes ejecutar el **proyectoDCA-0.10.0-win64.exe** y después de seguir los pasos ya tendrás el juego instalado en tu sistema. Para jugar puedes buscarlo en el menu de inicio pulsando la tecla windows y escribiendo:
+Ahora puedes ejecutar el **proyectoDCA-1.0.0-win64.exe** y después de seguir los pasos ya tendrás el juego instalado en tu sistema. Para jugar puedes buscarlo en el menu de inicio pulsando la tecla windows y escribiendo:
 
 `proyectoDCA`
 

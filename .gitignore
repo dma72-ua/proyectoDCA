@@ -1,3 +1,4 @@
+*.flatpak
 game
 *.o
 build/

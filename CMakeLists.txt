@@ -1,7 +1,7 @@
 ﻿cmake_minimum_required(VERSION 3.15)
 
 project(proyectoDCA
-    VERSION 0.10.0
+    VERSION 1.0.0
     DESCRIPTION "Juego de plataformas con Raylib"
     LANGUAGES CXX
 )
@@ -11,15 +11,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Generar compile_commands.js para el lsp de clangd
 
+option(BUILD_TESTS "Construir tests" ON)
+
 set(VENDOR_DIR "${CMAKE_SOURCE_DIR}/vendor")
 set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
 
+include(GNUInstallDirs)
 include(Dependencies.cmake)
 
 file(GLOB_RECURSE SOURCES
     "${CMAKE_SOURCE_DIR}/src/*.cpp"
 )
 list(FILTER SOURCES EXCLUDE REGEX ".*src/core/main.cpp$")
+
+if(WIN32)
+    list(FILTER SOURCES EXCLUDE REGEX ".*glibc_compat.cpp$")
+endif()
 
 add_library(core_lib STATIC ${SOURCES} ${HEADERS})
 target_include_directories(core_lib PUBLIC ${CMAKE_SOURCE_DIR}/src)
@@ -30,12 +37,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE core_lib)
 
 source_group(TREE "${CMAKE_SOURCE_DIR}" FILES ${SOURCES})
 
-enable_testing()
-add_subdirectory(tests)
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
 
 set(CPACK_PACKAGE_NAME "proyectoDCA")
 set(CPACK_PACKAGE_VENDOR "Equipo de DCA: Enrique, Adnan, Salma y David")
-set(CPACK_PACKAGE_VERSION "0.10.0")
+set(CPACK_PACKAGE_VERSION "1.0.0")
 
 if(WIN32)
     install(TARGETS proyectoDCA RUNTIME DESTINATION .)
@@ -56,12 +65,12 @@ if(UNIX AND NOT APPLE)
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/assets 
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME})
 
-    # Para DEB
     set(CPACK_GENERATOR "DEB;RPM")
+
+    # Para DEB
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Equipo de DCA: Enrique, Adnan, Salma y David")
     set(CPACK_DEBIAN_PACKAGE_SECTION "games")
     set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libraylib (>=5.0)")
 
     # Para RPM
     set(CPACK_RPM_PACKAGE_LICENSE "MIT")
@@ -72,6 +81,10 @@ if(UNIX AND NOT APPLE)
 endif()
 
 include(CPack)
+
+if(EXISTS ${CMAKE_SOURCE_DIR}/CPackConfig.cmake)
+    include("${CMAKE_SOURCE_DIR}/CPackConfig.cmake")
+endif()
 
 # Directorio de salida unificado para MSVC
 if(MSVC OR CMAKE_GENERATOR MATCHES "Visual Studio")
@@ -86,16 +99,6 @@ else()
     set_target_properties(${PROJECT_NAME} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
     )
-endif()
-
-if(WIN32)
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION .)
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/assets DESTINATION assets)
-endif()
-
-if(UNIX AND NOT APPLE)
-    install(TARGETS ${PROJECT_NAME} DESTINATION bin)
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/assets DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/assets)
 endif()
 
 # Determinar donde poner los assets
@@ -121,4 +124,33 @@ add_custom_target(run
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Corriendo ${PROJECT_NAME}..."
 )
+endif()
+
+find_program(GETTEXT_MSGFMT_EXECUTABLE msgfmt)
+
+if(GETTEXT_MSGFMT_EXECUTABLE AND EXISTS "${CMAKE_SOURCE_DIR}/po")
+    set(LANGS es en)
+    foreach(LANG ${LANGS})
+        set(PO_FILE "${CMAKE_SOURCE_DIR}/po/${LANG}.po")
+        set(MO_DIR "${CMAKE_BINARY_DIR}/locales/${LANG}/LC_MESSAGES")
+        set(MO_FILE "${MO_DIR}/${PROJECT_NAME}.mo")
+
+        file(MAKE_DIRECTORY ${MO_DIR})
+
+        add_custom_command(
+            OUTPUT ${MO_FILE}
+            COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o ${MO_FILE} ${PO_FILE}
+            DEPENDS ${PO_FILE}
+            COMMENT "Compilando traducción ${LANG}..."
+        )
+        list(APPEND MO_FILES ${MO_FILE})
+
+        # Instalar para el paquete .deb / .rpm
+        if(UNIX AND NOT APPLE)
+            install(FILES ${MO_FILE} DESTINATION share/${PROJECT_NAME}/locales/${LANG}/LC_MESSAGES)
+        endif()
+    endforeach()
+
+    add_custom_target(translations ALL DEPENDS ${MO_FILES})
+    add_dependencies(${PROJECT_NAME} translations)
 endif()

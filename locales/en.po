@@ -15,8 +15,8 @@ msgstr "Level 3 - Mastery"
 msgid "Monedas: %d/%d  Puntos: %d"
 msgstr "Coins: %d/%d  Score: %d"
 
-msgid "Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu."
-msgstr "Arrows/A D move, SPACE jump. R retry, ENTER menu."
+msgid "Flechas/A D moverse, ESPACIO para saltar. ENTER menu."
+msgstr "Arrows/A D move, SPACE jump. ENTER menu."
 
 msgid "Nivel %d/%d"
 msgstr "Level %d/%d"
