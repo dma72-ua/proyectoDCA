@@ -333,6 +333,12 @@ int main() {
         invincibilityTimer -= dt;
       }
 
+      // Perder la partida si se cae del mapa
+      if (player.position.y >= 800) {
+        PlaySound(audio.hurtSound);
+        state = GameState::DEFEAT;
+      }
+
       // Detectar salto para reproducir sonido
       bool wasJumping = player.vy() < 0;
       player.UpdatePlayer(currentLevel.envItems, currentLevel.teleporters, dt);
