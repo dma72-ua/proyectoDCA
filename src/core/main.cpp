@@ -398,6 +398,9 @@ int main() {
         if (invincibilityTimer > 0.0f)
           continue;
 
+        if (e.rect.y >= 600)
+          e.reset(e.startingPos, e.startingDir);
+
         Rectangle eb = e.bounds();
         if (CheckCollisionRecs(pb, eb)) {
           float pbBottom = pb.y + pb.height;
