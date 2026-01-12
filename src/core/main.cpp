@@ -105,35 +105,27 @@ static const std::vector<Theme> themes = {
 static void DrawRetroBackgroundScreen(float scrollTimer, float cameraY) {
   int screenW = GetScreenWidth();
 
-  // Helper to draw a single soft "puff" of a cloud
   auto drawPuff = [](float px, float py, float radius, Color baseColor,
                      Color shadowColor) {
     Color transparent = {255, 255, 255, 0};
-    // 1. Draw a shadow puff slightly offset down
     DrawCircleGradient((int)px, (int)(py + radius * 0.15f), radius, shadowColor,
                        transparent);
-    // 2. Draw the main white puff
     DrawCircleGradient((int)px, (int)py, radius, baseColor, transparent);
   };
 
-  // Helper to assemble multiple puffs into a cloud with parallax and wrapping
   auto drawCloud = [&](float startX, float y, float w, unsigned char alpha,
                        float speedMult, float parallaxY) {
-    // Calculate horizontal position with wrapping (loops from -w to screenW)
     float xPos =
         fmodf(startX - (scrollTimer * speedMult), (float)screenW + w * 2);
     if (xPos < -w)
       xPos += (screenW + w * 2);
     xPos -= w;
 
-    // Apply vertical parallax (moves clouds slightly when player jumps)
-    // We use a baseline (e.g., 400) so the clouds stay in the upper sky area
     float finalY = y - (cameraY - 400.0f) * parallaxY;
 
     Color base = {255, 255, 255, alpha};
     Color shadow = {160, 180, 210, (unsigned char)(alpha * 0.8f)};
 
-    // Draw the cloud shape using puffs
     drawPuff(xPos, finalY, w * 0.5f, base, shadow);
     drawPuff(xPos + w * 0.4f, finalY - w * 0.2f, w * 0.6f, base, shadow);
     drawPuff(xPos + w * 0.8f, finalY - w * 0.1f, w * 0.55f, base, shadow);
@@ -141,24 +133,16 @@ static void DrawRetroBackgroundScreen(float scrollTimer, float cameraY) {
     drawPuff(xPos + w * 0.2f, finalY + w * 0.2f, w * 0.3f, base, shadow);
   };
 
-  // --- DRAW LAYERS ---
-  // Parameters: (InitialX, Y_Height, Width, Opacity, HorizontalSpeed,
-  // VerticalParallaxFactor)
-
-  // Layer 1: Very Far (Slowest, dimmest, barely reacts to jumps)
   drawCloud(100, 60, 100, 100, 0.5f, 0.03f);
   drawCloud(600, 40, 120, 90, 0.5f, 0.03f);
 
-  // Layer 2: Mid Background
   drawCloud(300, 120, 80, 160, 1.2f, 0.07f);
   drawCloud(850, 100, 90, 150, 1.2f, 0.07f);
 
-  // Layer 3: Near (Fastest, brightest, reacts more to jumps)
   drawCloud(150, 180, 130, 210, 2.0f, 0.12f);
   drawCloud(700, 210, 110, 220, 2.0f, 0.12f);
 }
 
-// Simplified wispy cloud using the same gradient logic
 auto wispyCloud = [](int x, int y, int w, unsigned char alpha) {
   Color baseColor = {255, 255, 255, (unsigned char)(alpha * 0.6f)};
   Color transparent = {255, 255, 255, 0};
@@ -602,12 +586,10 @@ int main() {
       }
     }
 
-    DrawText(
-        _("Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu."),
-        12, 10, 18, BLACK);
-    DrawText(
-        _("Flechas/A D moverse, ESPACIO para saltar. R reintenta, ENTER menu."),
-        10, 8, 18, RAYWHITE);
+    DrawText(_("Flechas/A D moverse, ESPACIO para saltar. ENTER menu."), 12, 10,
+             18, BLACK);
+    DrawText(_("Flechas/A D moverse, ESPACIO para saltar. ENTER menu."), 10, 8,
+             18, RAYWHITE);
 
     if (state == GameState::PLAYING) {
       const char *levelText =

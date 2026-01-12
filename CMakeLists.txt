@@ -1,7 +1,7 @@
 ﻿cmake_minimum_required(VERSION 3.15)
 
 project(proyectoDCA
-    VERSION 0.10.0
+    VERSION 1.0.0
     DESCRIPTION "Juego de plataformas con Raylib"
     LANGUAGES CXX
 )
@@ -35,7 +35,7 @@ add_subdirectory(tests)
 
 set(CPACK_PACKAGE_NAME "proyectoDCA")
 set(CPACK_PACKAGE_VENDOR "Equipo de DCA: Enrique, Adnan, Salma y David")
-set(CPACK_PACKAGE_VERSION "0.10.0")
+set(CPACK_PACKAGE_VERSION "1.0.0")
 
 if(WIN32)
     install(TARGETS proyectoDCA RUNTIME DESTINATION .)
