@@ -71,7 +71,6 @@ if(UNIX AND NOT APPLE)
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Equipo de DCA: Enrique, Adnan, Salma y David")
     set(CPACK_DEBIAN_PACKAGE_SECTION "games")
     set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libraylib (>=5.0)")
 
     # Para RPM
     set(CPACK_RPM_PACKAGE_LICENSE "MIT")
