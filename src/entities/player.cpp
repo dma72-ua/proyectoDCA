@@ -39,14 +39,22 @@ Player::Player(Vector2 position, float speed, bool canJump) {
 }
 
 void Player::updatePlayer(float delta, std::vector<EnvItem> &envItems, std::vector<Teleporter> &teleporters) {
+  
+  
+  // Movimiento horizontal con power-up de velocidad
+  float moveSpeed = PLAYER_MOVE_SPEED;
+  if (hasSpeedBoots) {
+    moveSpeed *= 1.5f; // 50% más rápido con botas
+  }
+
   // Movimiento horizontal
   float deltaX = 0;
   if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
-    deltaX -= PLAYER_MOVE_SPEED * delta;
+    deltaX -= moveSpeed * delta;
     isFacingRight = false;
   }
   if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
-    deltaX += PLAYER_MOVE_SPEED * delta;
+    deltaX += moveSpeed * delta;
     isFacingRight = true;
   }
   
@@ -73,7 +81,13 @@ void Player::updatePlayer(float delta, std::vector<EnvItem> &envItems, std::vect
     speed = -PLAYER_JUMP_SPEED;
     canJump = false;
   }
-  
+
+if (hasAngelWings && !canJump && speed > 0) {
+    // Si mantiene presionada la tecla de salto mientras cae, planea
+    if (IsKeyDown(KEY_SPACE) || IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) {
+        speed = fmin(speed, 150.0f); // Limitar velocidad de caída
+    }
+}
   // Colisión vertical
   bool hitObstacle = false;
   float nextY = position.y + (speed * delta);
@@ -162,6 +176,32 @@ void Player::draw() {
         
         DrawTexturePro(texture, source, destRec, {0,0}, 0.0f, WHITE);
         
+        // Efectos visuales de power-ups activos
+        if (hasSpeedBoots) {
+            // Partículas de velocidad detrás del jugador
+            float particleX = isFacingRight ? position.x - 15 : position.x + 15;
+            Color speedColor = Color{76, 187, 23, 100};
+            DrawCircle(particleX, position.y - height/2, 3, speedColor);
+        }
+        
+        if (hasAngelWings && !canJump && speed > 0) {
+            // Efecto de alas mientras planea
+            float wingOffset = 20.0f;
+            Color wingColor = Color{135, 206, 250, 150};
+            DrawCircle(position.x - wingOffset, position.y - height/2, 8, wingColor);
+            DrawCircle(position.x + wingOffset, position.y - height/2, 8, wingColor);
+        }
+        
+        if (hasShield) {
+            // Escudo protector alrededor del jugador
+            float time = GetTime();
+            float pulse = 1.0f + 0.1f * sinf(time * 5.0f);
+            Color shieldColor = Color{255, 215, 0, 80};
+            DrawCircleLines(position.x, position.y - height/2, 30 * pulse, shieldColor);
+            DrawCircleLines(position.x, position.y - height/2, 32 * pulse, shieldColor);
+        }
+
+
         // DEBUG: Descomenta para ver el hitbox de colisión
         // DrawRectangleLinesEx(bounds(), 2, RED);
     } else {
@@ -233,5 +273,34 @@ void Player::updateAnimation(float deltaTime) {
             frameRec.width = 50.0f;
             frameRec.height = 37.0f;
         }
+    }
+}
+
+// Implementar métodos de power-ups
+void Player::activatePowerUp(int powerUpType) {
+    switch(powerUpType) {
+        case 0: // SPEED_BOOTS
+            hasSpeedBoots = true;
+            break;
+        case 1: // ANGEL_WINGS
+            hasAngelWings = true;
+            break;
+        case 2: // SHIELD
+            hasShield = true;
+            break;
+    }
+}
+
+void Player::deactivatePowerUp(int powerUpType) {
+    switch(powerUpType) {
+        case 0: // SPEED_BOOTS
+            hasSpeedBoots = false;
+            break;
+        case 1: // ANGEL_WINGS
+            hasAngelWings = false;
+            break;
+        case 2: // SHIELD
+            hasShield = false;
+            break;
     }
 }

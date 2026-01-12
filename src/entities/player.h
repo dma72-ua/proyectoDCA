@@ -53,6 +53,21 @@ public:
     int framesCounter = 0;
     int framesSpeed = 8;
     bool isFacingRight = true;
+
+    // Power-ups activos
+    bool hasSpeedBoots = false;
+    bool hasAngelWings = false;
+    bool hasShield = false;
+    
+    // Métodos para power-ups
+    void activatePowerUp(int powerUpType);
+    void deactivatePowerUp(int powerUpType);
+    void resetPowerUps() { 
+        hasSpeedBoots = false; 
+        hasAngelWings = false; 
+        hasShield = false; 
+    }
+    
 private:
     float frameTime = 0.0f;
     float frameSpeed = 10.0f; // Frames por segundo
