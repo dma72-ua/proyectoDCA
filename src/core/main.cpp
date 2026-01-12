@@ -8,11 +8,16 @@
 #include "raylib.h"
 #include <cmath>
 #include <filesystem>
-#include <libintl.h>
 #include <locale.h>
 #include <vector>
 
-#define _(String) gettext(String)
+#ifdef __linux__
+    #include <libintl.h>
+    #define _(String) gettext(String)
+#else
+    // En Windows (y otros sistemas), sin traducción
+    #define _(String) (String)
+#endif
 
 // ----------------- Estados de juego -----------------
 enum class GameState {
@@ -204,14 +209,17 @@ void UpdateCameraPlayerBoundsPush(Camera2D *camera, Player *player) {
     camera->target.y = bboxWorldMin.y + (player->position.y - bboxWorldMax.y);
 }
 
+#ifdef __linux__
 void ChangeLanguage(const char *lang) {
   setenv("LANGUAGE", lang, 1);
   setlocale(LC_ALL, "");
   // Reiniciar el dominio de texto para recargar las traducciones
   textdomain("proyectoDCA");
 }
+#endif
 
 int main() {
+  #ifdef __linux_
   // Inicialización de gettext
   setlocale(LC_ALL, "");
   bindtextdomain("proyectoDCA", "locales");
@@ -219,6 +227,7 @@ int main() {
 
   // Idioma por defecto: Español
   ChangeLanguage("es");
+  #endif
 
   InitWindow(960, 540, "proyectoDCA");
   SetTargetFPS(60);
@@ -327,7 +336,9 @@ int main() {
           themeSelection = themes.size() - 1;
       } else if (IsKeyPressed(KEY_L)) {
         isEnglish = !isEnglish;
+        #ifdef __linux_
         ChangeLanguage(isEnglish ? "en" : "es");
+        #endif
       }
 
       if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {

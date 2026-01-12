@@ -13,8 +13,13 @@ bool LevelManager::advanceLevel() {
   return false;
 }
 
-#include <libintl.h>
-#define _(String) gettext(String)
+#ifdef __linux__
+    #include <libintl.h>
+    #define _(String) gettext(String)
+#else
+    // En Windows (y otros sistemas), sin traducción
+    #define _(String) (String)
+#endif
 
 void LevelManager::initializeLevels() {
   // LEVEL 1 - Tutorial/Easy

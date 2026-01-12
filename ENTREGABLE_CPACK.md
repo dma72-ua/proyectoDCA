@@ -26,7 +26,7 @@ Luego puedes correrlo desde la terminal simplemente poniendo desde cualquier dir
 
 `mkdir build && cd build`
 
-`cmake .. && cmake --build . --config Release`
+`cmake -DBUILD_TESTS=OFF .. && cmake --build . --config Release`
 
 `cpack`
 

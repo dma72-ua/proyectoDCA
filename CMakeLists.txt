@@ -11,6 +11,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Generar compile_commands.js para el lsp de clangd
 
+option(BUILD_TESTS "Construir tests" ON)
+
 set(VENDOR_DIR "${CMAKE_SOURCE_DIR}/vendor")
 set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
 
@@ -22,6 +24,10 @@ file(GLOB_RECURSE SOURCES
 )
 list(FILTER SOURCES EXCLUDE REGEX ".*src/core/main.cpp$")
 
+if(WIN32)
+    list(FILTER SOURCES EXCLUDE REGEX ".*glibc_compat.cpp$")
+endif()
+
 add_library(core_lib STATIC ${SOURCES} ${HEADERS})
 target_include_directories(core_lib PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(core_lib PUBLIC raylib)
@@ -31,8 +37,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE core_lib)
 
 source_group(TREE "${CMAKE_SOURCE_DIR}" FILES ${SOURCES})
 
-enable_testing()
-add_subdirectory(tests)
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
 
 set(CPACK_PACKAGE_NAME "proyectoDCA")
 set(CPACK_PACKAGE_VENDOR "Equipo de DCA: Enrique, Adnan, Salma y David")
