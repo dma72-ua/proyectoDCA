@@ -24,6 +24,7 @@ struct Level {
   std::vector<Vector2> coinPositions;
   std::vector<Vector2> starPositions;
   std::vector<Teleporter> teleporters;
+  std::vector<std::pair<Vector2, int>> powerUpPositions;
 };
 
 class LevelManager {

@@ -77,6 +77,17 @@ void LevelManager::initializeLevels() {
           {{330, 100, 38, 20}, {2874, 280}},
           // Return: Exit at 2850 -> Entry at 325
           {{2855, 330, 38, 20}, {325, 50}}
+      },
+      {
+          // POWER-UPS NIVEL 1
+          // Botas de velocidad: en plataforma intermedia, ayuda con saltos
+          {{860, 210}, 0},  // 0 = SPEED_BOOTS (verde)
+          
+          // Alas: en plataforma alta antes de zona difícil  
+          {{1350, 210}, 1}, // 1 = ANGEL_WINGS (azul)
+          
+          // Escudo: protección para la zona final con enemigos
+          {{2450, 210}, 2}, // 2 = SHIELD (dorado)
       }
   });
 
@@ -145,6 +156,20 @@ void LevelManager::initializeLevels() {
           {{430, 100, 38, 20}, {3824, 340}}, // Shortcut to near end
           // Return path
           {{3805, 390, 38, 20}, {425, 50}}
+      },
+      {
+          // POWER-UPS NIVEL 2
+          // Escudo temprano: zona peligrosa con enemigos
+          {{600, 170}, 2},  // 2 = SHIELD
+          
+          // Botas: ayuda en sección de saltos largos
+          {{1250, 230}, 0}, // 0 = SPEED_BOOTS
+          
+          // Alas: antes de gap grande
+          {{2150, 210}, 1}, // 1 = ANGEL_WINGS
+          
+          // Escudo adicional: protección para zona final
+          {{3550, 310}, 2}, // 2 = SHIELD
       }
   });
 
@@ -226,6 +251,26 @@ void LevelManager::initializeLevels() {
           {{630, 100, 38, 20}, {5224, 340}}, // Skip almost entire level
           // Return path
           {{5205, 390, 38, 20}, {625, 50}}
+      },
+      {
+          // POWER-UPS NIVEL 3 - Nivel difícil, más poder
+          // Botas tempranas: ayuda con sección inicial difícil
+          {{450, 100}, 0},  // 0 = SPEED_BOOTS
+          
+          // Escudo: protección para primera zona de enemigos
+          {{1000, 170}, 2}, // 2 = SHIELD
+          
+          // Alas: críticas para saltos precisos
+          {{1700, 210}, 1}, // 1 = ANGEL_WINGS
+          
+          // Escudo: mitad del nivel
+          {{2850, 200}, 2}, // 2 = SHIELD
+          
+          // Botas adicionales: sprint final
+          {{3650, 210}, 0}, // 0 = SPEED_BOOTS
+          
+          // Escudo final: para sobrevivir al gauntlet final
+          {{4650, 170}, 2}, // 2 = SHIELD
       }
   });
 }
