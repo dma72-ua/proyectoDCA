@@ -56,13 +56,13 @@ void Player::updatePlayer(float delta, std::vector<EnvItem> &envItems, std::vect
   position.x += deltaX;
   
   // Colisión horizontal
-  Rectangle playerRect = {position.x, position.y - height, width, height};
+  Rectangle playerRect = {position.x - width * 0.5f, position.y - height, width, height};
   for (auto &envItem : envItems) {
     if (envItem.blocking && CheckCollisionRecs(playerRect, envItem.rect)) {
       if (deltaX > 0) {
-        position.x = envItem.rect.x - width;
+        position.x = envItem.rect.x - width * 0.5f;
       } else if (deltaX < 0) {
-        position.x = envItem.rect.x + envItem.rect.width;
+        position.x = envItem.rect.x + envItem.rect.width + width * 0.5f;
       }
     }
   }
@@ -80,8 +80,8 @@ void Player::updatePlayer(float delta, std::vector<EnvItem> &envItems, std::vect
   
   for (auto &envItem : envItems) {
     if (envItem.blocking &&
-        envItem.rect.x <= position.x + width &&
-        envItem.rect.x + envItem.rect.width >= position.x) {
+        envItem.rect.x <= position.x + width * 0.5f &&
+        envItem.rect.x + envItem.rect.width >= position.x - width * 0.5f) {
       
       // Colisión desde arriba (cayendo)
       if (speed > 0 && 
@@ -116,7 +116,7 @@ void Player::updatePlayer(float delta, std::vector<EnvItem> &envItems, std::vect
 
   // Teleportation
   if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) {
-      Rectangle playerRect = {position.x, position.y - height, width, height};
+      Rectangle playerRect = {position.x - width * 0.5f, position.y - height, width, height};
       for (const auto& teleporter : teleporters) {
           if (CheckCollisionRecs(playerRect, teleporter.entry)) {
               position = teleporter.destination;
